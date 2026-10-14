@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: siparisyonetimsistemi
+  jpa:
+
+    hibernate:
+      ddl-auto: update
+    open-in-view: true
+    defer-datasource-initialization: true
+  sql:
+    init:
+      mode: always
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/siparisyonetimsistemi
+    username: root
+    password: Secret@3210
+security:
+  jwt:
+    expiration-time: 3600000
+default:
+  locale: tr

@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: siparisyonetimsistemi
+  profiles:
+    active: dev
+  web:
+    resources:
+      add-mappings: true
+
+redirect:
+  forwardUrl: /
