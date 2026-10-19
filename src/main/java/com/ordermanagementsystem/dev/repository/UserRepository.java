@@ -1,17 +1,17 @@
 package com.ordermanagementsystem.dev.repository;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+
 import com.ordermanagementsystem.dev.model.UserModel;
 
 public interface UserRepository extends JpaRepository<UserModel, Long> {
+    Optional<UserModel> findByUserName(String userName);
 
-    Optional<UserModel> findByEmail(String email);
+    Optional<UserModel> findByUserEmail(String userEmail);
 
-    boolean existsByEmail(String email);
+    boolean existsByUserName(String userName);
 
-    List<UserModel> findByPassword(String password);
-
+    boolean existsByUserEmail(String userEmail);
 }

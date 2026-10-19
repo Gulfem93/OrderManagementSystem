@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kayıt Ol | Sipariş Yönetim Sistemi</title>
+    <link rel="stylesheet" th:href="@{/css/login.css}">
+    <link rel="stylesheet" th:href="@{/css/signup.css}">
+</head>
+<body class="signup-page">
+<main class="card signup-card">
+    <section class="signup-main">
+        <header class="signup-header">
+            <div class="logo" aria-hidden="true">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 8l-9-5-9 5 9 5 9-5z"/>
+                    <path d="M3 8v8l9 5 9-5V8"/>
+                    <path d="M12 13v8"/>
+                </svg>
+            </div>
+            <h1>Hesap Oluştur</h1>
+            <p class="subtitle">Sipariş Yönetim Sistemi'ne hoş geldiniz</p>
+        </header>
+
+        <div th:if="${errorMessage}" class="alert alert-error" role="alert" th:text="${errorMessage}"></div>
+
+        <form id="signupForm" th:action="@{/signup}" th:object="${signupForm}" method="post" novalidate>
+            <div class="row">
+                <div class="field">
+                    <label for="userName">Kullanıcı Adı</label>
+                    <div class="input-wrap">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                        <input type="text" id="userName" th:field="*{userName}" placeholder="kullaniciadi"
+                               autocomplete="username" required autofocus>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label for="userSurname">Soyad <span class="optional">(isteğe bağlı)</span></label>
+                    <div class="input-wrap">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                        <input type="text" id="userSurname" th:field="*{userSurname}" placeholder="Soyadınız"
+                               autocomplete="family-name">
+                    </div>
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="userEmail">E-posta</label>
+                <div class="input-wrap">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <rect x="2" y="4" width="20" height="16" rx="2"/>
+                        <path d="M22 6l-10 7L2 6"/>
+                    </svg>
+                    <input type="email" id="userEmail" th:field="*{userEmail}" placeholder="ornek@firma.com"
+                           autocomplete="email" required>
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="userPassword">Şifre</label>
+                <div class="input-wrap">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <rect x="3" y="11" width="18" height="11" rx="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                    <input type="password" id="userPassword" name="userPassword" class="has-toggle"
+                           placeholder="••••••••" autocomplete="new-password" minlength="6" required>
+                    <button type="button" class="toggle-password" data-target="userPassword"
+                            aria-label="Şifreyi göster">
+                        <svg class="eye" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                        <svg class="eye-off" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                            <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                            <path d="M1 1l22 22"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="strength" id="strength" data-level="0" aria-live="polite">
+                    <div class="strength-bar"><span></span><span></span><span></span><span></span></div>
+                    <span class="strength-label" id="strengthLabel"></span>
+                </div>
+                <ul class="rules" id="rules">
+                    <li data-rule="length">En az 6 karakter</li>
+                    <li data-rule="case">Büyük ve küçük harf</li>
+                    <li data-rule="digit">Rakam veya sembol</li>
+                </ul>
+            </div>
+
+            <div class="field">
+                <label for="confirmPassword">Şifre Tekrar</label>
+                <div class="input-wrap">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    </svg>
+                    <input type="password" id="confirmPassword" class="has-toggle"
+                           placeholder="••••••••" autocomplete="new-password" required>
+                    <button type="button" class="toggle-password" data-target="confirmPassword"
+                            aria-label="Şifreyi göster">
+                        <svg class="eye" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                        <svg class="eye-off" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                            <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                            <path d="M1 1l22 22"/>
+                        </svg>
+                    </button>
+                </div>
+                <p class="hint" id="confirmHint" aria-live="polite"></p>
+            </div>
+
+            <button type="submit" class="submit-btn" id="submitBtn">
+                <span class="btn-text">Hesap Oluştur</span>
+                <span class="spinner" aria-hidden="true"></span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M5 12h14"/>
+                    <path d="M12 5l7 7-7 7"/>
+                </svg>
+            </button>
+        </form>
+    </section>
+
+    <footer class="signup-footer">
+        Zaten hesabınız var mı? <a th:href="@{/login}">Giriş yapın</a>
+    </footer>
+</main>
+
+<script>
+    (function () {
+        const form = document.getElementById('signupForm');
+        const password = document.getElementById('userPassword');
+        const confirm = document.getElementById('confirmPassword');
+        const confirmHint = document.getElementById('confirmHint');
+        const strength = document.getElementById('strength');
+        const strengthLabel = document.getElementById('strengthLabel');
+        const submitBtn = document.getElementById('submitBtn');
+        const labels = ['', 'Zayıf', 'Orta', 'İyi', 'Güçlü'];
+        const rules = {
+            length: function (v) { return v.length >= 6; },
+            case: function (v) { return /[A-Z]/.test(v) && /[a-z]/.test(v); },
+            digit: function (v) { return /[^A-Za-zğüşıöçĞÜŞİÖÇ]/.test(v); }
+        };
+
+        document.querySelectorAll('.toggle-password').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                const input = document.getElementById(btn.dataset.target);
+                const show = input.type === 'password';
+                input.type = show ? 'text' : 'password';
+                btn.classList.toggle('showing', show);
+                btn.setAttribute('aria-label', show ? 'Şifreyi gizle' : 'Şifreyi göster');
+            });
+        });
+
+        function scorePassword(value) {
+            if (!value) return 0;
+            let score = 0;
+            if (value.length >= 6) score++;
+            if (value.length >= 10) score++;
+            if (rules.case(value)) score++;
+            if (/\d/.test(value) && /[^A-Za-z0-9]/.test(value)) score++;
+            return Math.max(1, Math.min(4, score));
+        }
+
+        function checkMatch() {
+            if (!confirm.value) {
+                confirmHint.textContent = '';
+                confirm.classList.remove('invalid');
+                return true;
+            }
+            const match = confirm.value === password.value;
+            confirmHint.textContent = match ? '✓ Şifreler eşleşiyor' : 'Şifreler eşleşmiyor';
+            confirmHint.classList.toggle('error', !match);
+            confirm.classList.toggle('invalid', !match);
+            return match;
+        }
+
+        password.addEventListener('input', function () {
+            const value = password.value;
+            const level = scorePassword(value);
+            strength.dataset.level = level;
+            strengthLabel.textContent = labels[level];
+            document.querySelectorAll('#rules li').forEach(function (li) {
+                li.classList.toggle('met', rules[li.dataset.rule](value));
+            });
+            checkMatch();
+        });
+        confirm.addEventListener('input', checkMatch);
+
+        form.addEventListener('input', function (e) {
+            if (e.target !== confirm && e.target.checkValidity()) {
+                e.target.classList.remove('invalid');
+            }
+        });
+
+        form.addEventListener('submit', function (e) {
+            form.querySelectorAll('input').forEach(function (input) {
+                input.classList.toggle('invalid', !input.checkValidity());
+            });
+            const matches = confirm.value === password.value;
+            if (!form.checkValidity() || !matches) {
+                e.preventDefault();
+                checkMatch();
+                const firstInvalid = form.querySelector('input.invalid');
+                if (firstInvalid) firstInvalid.focus();
+                return;
+            }
+            submitBtn.classList.add('loading');
+            submitBtn.querySelector('.btn-text').textContent = 'Hesap oluşturuluyor…';
+        });
+    })();
+</script>
+</body>
+</html>

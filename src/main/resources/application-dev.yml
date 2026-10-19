@@ -1,6 +1,6 @@
 spring:
   application:
-    name: siparisyonetimsistemi
+    name: ordermanagementsystem
   jpa:
 
     hibernate:
@@ -12,7 +12,7 @@ spring:
       mode: always
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/siparisyonetimsistemi
+    url: jdbc:mysql://localhost:3306/ordermanagementsystem
     username: root
     password: Secret@3210
 security:

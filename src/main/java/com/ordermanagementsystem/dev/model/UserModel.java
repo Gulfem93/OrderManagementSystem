@@ -6,6 +6,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,18 +17,30 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UserModel {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private long userId;
 
-    @Column(nullable = false, unique = true)
-    private String email;
+    @NotBlank(message = "Email address is required.")
+    @Email(message = "Please enter a valid email address.")
+    @Size(max = 100, message = "Email address must not exceed 100 characters.")
+    @Column(nullable = false, unique = true, length = 100)
+    private String userEmail;
 
-    @Column(nullable = false)
-    private String password;
+    @NotBlank(message = "Password is required.")
+    @Size(min = 6, max = 100, message = "Password must be between 6 and 100 characters.")
+    @Column(nullable = false, length = 100)
+    private String userPassword;
 
-    @Column(nullable = false)
-    private String role = "USER";
+    @Column
+    private String userName;
 
+    @Column
+    private String userSurname;
+
+    @Column
+    private String userActive;
+
+    @Column
+    private String userPhone;
 }
