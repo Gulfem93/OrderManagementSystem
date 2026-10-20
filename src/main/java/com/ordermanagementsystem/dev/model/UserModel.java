@@ -16,8 +16,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UserModel {
-    // userId, userName, userPassword, userEmail, userRole, userActive, userPhone
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
