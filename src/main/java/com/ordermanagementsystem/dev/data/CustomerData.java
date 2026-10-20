@@ -7,5 +7,5 @@ public class CustomerData {
     private String customerEmail;
     private String customerName;
     private String customerSurname;
-    private Long customerPhone;
+    private String customerPhone;
 }
