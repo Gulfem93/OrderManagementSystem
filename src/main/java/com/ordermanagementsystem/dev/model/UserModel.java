@@ -42,5 +42,4 @@ public class UserModel {
 
     @Column
     private Long userPhone;
-
 }
