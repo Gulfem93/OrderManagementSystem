@@ -10,5 +10,5 @@ public class UserData {
     private String userSurname;
     private Boolean userActive;
     private String userRole;
-    private Long userPhone;
+    private String userPhone;
 }
