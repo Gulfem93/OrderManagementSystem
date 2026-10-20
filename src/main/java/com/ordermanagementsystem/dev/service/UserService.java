@@ -3,7 +3,6 @@ package com.ordermanagementsystem.dev.service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.ordermanagementsystem.dev.config.PasswordConfig;
 import com.ordermanagementsystem.dev.data.UserData;
 import com.ordermanagementsystem.dev.model.UserModel;
 import com.ordermanagementsystem.dev.repository.UserRepository;
