@@ -20,12 +20,12 @@ public class UserModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
 
-    @NotBlank(message = "The email field cannot be left blank!")
-    @Email(message = "The email field cannot be left blank!")
+    @NotBlank(message = "The email field invalid email address!")
+    @Email(message = "The email field invalid email address!")
     @Column
     private String userEmail;
 
-    @NotBlank(message = "The password field cannot be left blank!")
+    @NotBlank(message = "The password field invalid email address!")
     @Column
     private String userPassword;
 
