@@ -29,9 +29,9 @@ public class UserService {
         usermodel.setUserName(userData.getUserName());
         usermodel.setUserPassword(passwordEncoder.encode(userData.getUserPassword()));
         usermodel.setUserSurname(userData.getUserSurname());
-        usermodel.setUserPhone(userData.getUserPhone());
+        usermodel.setUserPhone("USER");
         usermodel.setUserRole(userData.getUserRole());
-        usermodel.setUserActive(userData.getUserActive());
+        usermodel.setUserActive(true);
 
         return userRepository.save(usermodel);
     }
