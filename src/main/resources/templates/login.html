@@ -1,13 +1,27 @@
 <!DOCTYPE html>
-<html></html>
+<html>
+    <head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <link rel="stylesheet" th:href="@{/css/login.css}">
+  </head>
 <body>
-  <header></header>
-  <main>
-    <label for="useremail">E-mail</label>
-    <input type="text" placeholder="user@gmail.com" />
+    <header>
 
-    <label for="password">Password</label>
-    <input type="password" placeholder="*********" />
+    </header>
+  
+  <main>
+    <form th:action="@{/login}" method="post">
+        <label for="userEmail">E-mail</label>
+        <input type="text" id="userEmail" name="userEmail" placeholder="user@gmail.com" />
+
+        <label for="userPassword">Password</label>
+        <input type="password" id="userPassword" name="userPassword" placeholder="*********" /> />
+        <button type="submit">LOGIN</button>
+    </form>
+    
   </main>
   <footer></footer>
 </body>
+
+</html>
