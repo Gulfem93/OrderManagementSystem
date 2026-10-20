@@ -32,6 +32,6 @@ public class CustomerModel {
     private String customerSurname;
 
     @Column
-    private Long customerPhone;
+    private String customerPhone;
 
 }
