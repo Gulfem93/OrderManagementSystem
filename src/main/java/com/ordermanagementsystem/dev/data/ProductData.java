@@ -4,8 +4,10 @@ import lombok.Data;
 
 @Data
 public class ProductData {
+    // productName, productPrice, productStock, productCode
+    private String productCode;
     private String productName;
-    private int productPrice;
-    private int productStock;
-    private int productCode;
+    private Long productPrice;
+    private Long productStock;
+
 }

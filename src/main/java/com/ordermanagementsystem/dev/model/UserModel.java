@@ -8,7 +8,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,30 +16,31 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UserModel {
+    // userId, userName, userPassword, userEmail, userRole, userActive, userPhone
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long userId;
+    private Long userId;
 
-    @NotBlank(message = "Email address is required.")
-    @Email(message = "Please enter a valid email address.")
-    @Size(max = 100, message = "Email address must not exceed 100 characters.")
-    @Column(nullable = false, unique = true, length = 100)
+    @NotBlank(message = "The email field cannot be left blank!")
+    @Email(message = "The email field cannot be left blank!")
+    @Column
     private String userEmail;
 
-    @NotBlank(message = "Password is required.")
-    @Size(min = 6, max = 100, message = "Password must be between 6 and 100 characters.")
-    @Column(nullable = false, length = 100)
+    @NotBlank(message = "The password field cannot be left blank!")
+    @Column
     private String userPassword;
 
     @Column
     private String userName;
 
     @Column
-    private String userSurname;
+    private String userRole;
 
     @Column
     private String userActive;
 
     @Column
-    private String userPhone;
+    private Long userPhone;
+
 }

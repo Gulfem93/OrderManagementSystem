@@ -9,5 +9,5 @@ public class UserData {
     private String userName;
     private String userSurname;
     private String userActive;
-    private String userPhone;
+    private Long userPhone;
 }
