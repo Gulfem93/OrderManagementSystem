@@ -8,6 +8,7 @@ public class UserData {
     private String userPassword;
     private String userName;
     private String userSurname;
-    private String userActive;
+    private Boolean userActive;
+    private String userRole;
     private Long userPhone;
 }

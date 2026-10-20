@@ -33,10 +33,13 @@ public class UserModel {
     private String userName;
 
     @Column
+    private String userSurname;
+
+    @Column
     private String userRole;
 
     @Column
-    private String userActive;
+    private Boolean userActive;
 
     @Column
     private Long userPhone;
