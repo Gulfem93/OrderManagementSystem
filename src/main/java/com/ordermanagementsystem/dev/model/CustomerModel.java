@@ -20,8 +20,8 @@ public class CustomerModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long customerId;
 
-    @NotBlank(message = "The email field cannot be left blank!")
-    @Email(message = "The email field cannot be left blank!")
+    @NotBlank(message = "Email field cannot be blank!")
+    @Email(message = "Invalid email address!")
     @Column
     private String customerEmail;
 
