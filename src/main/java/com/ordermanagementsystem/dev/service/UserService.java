@@ -20,6 +20,9 @@ public class UserService {
     }
 
     public UserModel register(UserData userData) {
+        if (userRepository.existsByUserEmail(userData.getUserEmail())) {
+            throw new IllegalArgumentException("Bu e-posta ile kayıtlı bir kullanıcı zaten var.");
+        }
         UserModel usermodel = new UserModel();
         usermodel.setUserEmail(userData.getUserEmail());
         usermodel.setUserName(userData.getUserName());
