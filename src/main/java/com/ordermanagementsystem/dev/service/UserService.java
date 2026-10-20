@@ -10,17 +10,12 @@ import com.ordermanagementsystem.dev.repository.UserRepository;
 
 @Service
 public class UserService {
-    private final PasswordEncoder passwordEncoder;
-    private final PasswordConfig passwordConfig;
-    private final UserRepository userRepository;
-    private final UserModel userModel;
 
-    public UserService(
-            PasswordConfig passwordConfig, UserRepository userRepository,
-            UserModel userModel, PasswordEncoder passwordEncoder) {
-        this.passwordConfig = passwordConfig;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
-        this.userModel = userModel;
         this.passwordEncoder = passwordEncoder;
     }
 
