@@ -1,6 +1,8 @@
-package com.ordermanagementsystem.dev.service;
+package com.ordermanagementsystem.dev.security;
 
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -8,18 +10,25 @@ import com.ordermanagementsystem.dev.model.UserModel;
 import com.ordermanagementsystem.dev.repository.UserRepository;
 
 @Service
-public class CustomUserDetailsService {
+public class CustomUserDetailsService implements UserDetailsService {
+
     private final UserRepository userRepository;
 
     public CustomUserDetailsService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
-    public UserModel loadUserByUserName(String email) throws UsernameNotFoundException{
-        UserModel user = userRepository.findByUserEmail(email).orElseThrow(()->new UsernameNotFoundException("Kullanıcı bulunamadı"));
+    @Override
+    public UserDetails loadUserByUsername(String email)
+            throws UsernameNotFoundException {
 
-        return user.getUserEmail()
+        UserModel user = userRepository.findByUserEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Kullanıcı bulunamadı"));
 
+        return User.withUsername(user.getUserEmail())
+                .password(user.getUserPassword())
+                .roles(user.getUserRole())
+                .disabled(!Boolean.TRUE.equals(user.getUserActive()))
+                .build();
     }
-
 }
