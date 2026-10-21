@@ -18,7 +18,7 @@ public class SecurityConfig {
                                                 .loginPage("/login")
                                                 .usernameParameter("userEmail")
                                                 .passwordParameter("userPassword")
-                                                .defaultSuccessUrl("/orders", true)
+                                                .defaultSuccessUrl("/", true)
                                                 .failureUrl("/login?error")
                                                 .permitAll())
                                 .logout(logout -> logout
