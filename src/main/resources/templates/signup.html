@@ -10,6 +10,11 @@
     <header></header>
     <main>
         <form th:action="@{/signup}" method="post">
+            <label for="userRole">ROLE</label>
+            <select id="userRole" name="userRole">
+                <option value="australia">Owner</option>
+                <option value="canada">Customer</option>
+            </select>
             <div>
                 <label for="userName">User Name</label>
                 <input type="text" id="userName" name="userName" placeholder="user" required />

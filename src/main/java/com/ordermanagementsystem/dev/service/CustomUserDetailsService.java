@@ -1,4 +1,4 @@
-package com.ordermanagementsystem.dev.security;
+package com.ordermanagementsystem.dev.service;
 
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
