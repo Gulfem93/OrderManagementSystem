@@ -15,7 +15,7 @@ public class SecurityConfig {
                                                 .requestMatchers("/admin/**").hasRole("ADMIN")
                                                 .anyRequest().authenticated())
                                 .formLogin(form -> form
-                                                .loginPage("/login", "/signup", "/")
+                                                .loginPage("/login")
                                                 .usernameParameter("userEmail")
                                                 .passwordParameter("userPassword")
                                                 .defaultSuccessUrl("/orders", true)
