@@ -12,7 +12,7 @@
         <form th:action="@{/login}" method="post">
             <div>
                 <label for="userName">User Name</label>
-                <input type="text" id="username" name="username" placeholder="user" required />
+                <input type="text" id="userName" name="userName" placeholder="user" required />
             </div>
             <div>
                 <label for="userSurname">User Surname</label>
@@ -28,6 +28,11 @@
                 <input type="password" id="userPassword" name="userPassword" placeholder="*********" required />
             </div>
             
+            <div>
+                <label for="userPhone">Phone</label>
+                <input type="tel" id="userPhone" name="userPhone" placeholder="05XX XXX XX XX" />
+            </div>
+
             <button type="submit">SIGNUP</button>
         </form>
     </main>

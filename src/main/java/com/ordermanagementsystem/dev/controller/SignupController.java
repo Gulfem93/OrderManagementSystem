@@ -36,7 +36,8 @@ public class SignupController {
         try {
             userService.register(userData);
         } catch (IllegalArgumentException e) {
-            // TODO: handle exception
+            bindingResult.rejectValue("userEmail", "duplicate", e.getMessage());
+            return "signup";
         }
         return "redirect:/login?registered";
     }
