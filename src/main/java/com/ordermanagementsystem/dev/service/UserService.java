@@ -20,7 +20,7 @@ public class UserService {
 
     public UserModel register(UserData userData) {
         if (userRepository.existsByUserEmail(userData.getUserEmail())) {
-            throw new IllegalArgumentException("Bu e-posta ile kayıtlı bir kullanıcı zaten var.");
+            throw new IllegalArgumentException("A user with this email address is already registered.");
         }
 
         UserModel usermodel = new UserModel();
@@ -29,7 +29,12 @@ public class UserService {
         usermodel.setUserPassword(passwordEncoder.encode(userData.getUserPassword()));
         usermodel.setUserSurname(userData.getUserSurname());
         usermodel.setUserPhone(userData.getUserPhone());
-        usermodel.setUserRole("USER");
+        if (userData.getUserRole().isEmpty()) {
+            usermodel.setUserRole("USER");
+        } else {
+            usermodel.setUserRole(userData.getUserRole());
+        }
+
         usermodel.setUserActive(true);
 
         return userRepository.save(usermodel);
