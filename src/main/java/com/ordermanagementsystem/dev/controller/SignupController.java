@@ -2,6 +2,9 @@ package com.ordermanagementsystem.dev.controller;
 
 import com.ordermanagementsystem.dev.repository.UserRepository;
 import com.ordermanagementsystem.dev.service.UserService;
+
+import ch.qos.logback.core.model.Model;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 
@@ -23,7 +26,8 @@ public class SignupController {
     }
 
     @GetMapping("/signup")
-    public String getSignupPage() {
+    public String getSignupPage(Model model) {
+        model.addAttribute("userData", new UsersData());
         return "signup";
     }
 

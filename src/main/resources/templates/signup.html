@@ -28,27 +28,30 @@
                 </div>
 
                 <div class="row">
-                    <div class="field" th:if="${#fields.hasErrors('userName')}" th:errors="*{userName}">
+                    <div class="field">
                         <label for="userName">Name</label>
                         <input type="text" th:field="*{userName}" id="userName" name="userName" placeholder="John" required />
                     </div>
-                    <div class="field" th:if="${#fields.hasErrors('userSurname')}" th:errors="*{userSurname}">
+                    <div class="field">
                         <label for="userSurname">Surname</label>
                         <input type="text" id="userSurname" th:field="*{userSurname}" name="userSurname" placeholder="Doe" required />
                     </div>
                 </div>
 
-                <div class="field" th:if="${#fields.hasErrors('userEmail')}" th:errors="*{userEmail}">
+                <div class="field">
                     <label for="userEmail">E-mail</label>
-                    <input type="email" id="userEmail"  th:field="*{userEmail}" name="userEmail" placeholder="user@gmail.com" required />
+                    <input type="email" th:field="*{userEmail}" placeholder="user@gmail.com" required />
+                    <span class="alert alert_error"
+                        th:if="${#fields.hasErrors('userEmail')}"
+                        th:errors="*{userEmail}"></span>
                 </div>
 
-                <div class="field" th:if="${#fields.hasErrors('userPassword')}" th:errors="*{userPassword}">
+                <div class="field">
                     <label for="userPassword">Password</label>
                     <input type="password" id="userPassword" th:field="*{userPassword}" name="userPassword" placeholder="••••••••" required />
                 </div>
 
-                <div class="field" th:if="${#fields.hasErrors('userPhone')}" th:errors="*{userPhone}">
+                <div class="field">
                     <label for="userPhone">Phone <span class="optional">(optional)</span></label>
                     <input type="tel" id="userPhone" name="userPhone" th:field="*{userPhone}" placeholder="05XX XXX XX XX" />
                 </div>
