@@ -3,7 +3,7 @@ package com.ordermanagementsystem.dev.controller;
 import com.ordermanagementsystem.dev.repository.UserRepository;
 import com.ordermanagementsystem.dev.service.UserService;
 
-import ch.qos.logback.core.model.Model;
+import org.springframework.ui.Model;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
