@@ -13,7 +13,7 @@
     <header></header>
     <main>
         <div class="container">
-            <form th:action="@{/signup}" method="post" class="form_signup">
+            <form th:action="@{/signup}" th:object="${userData}" method="post" class="form_signup">
                 <div class="form_header">
                     <h1 class="label_signup">Create Account</h1>
                     <p class="subtitle">Sign up to start managing your orders</p>
@@ -28,29 +28,29 @@
                 </div>
 
                 <div class="row">
-                    <div class="field">
+                    <div class="field" th:if="${#fields.hasErrors('userName')}" th:errors="*{userName}">
                         <label for="userName">Name</label>
-                        <input type="text" id="userName" name="userName" placeholder="John" required />
+                        <input type="text" th:field="*{userName}" id="userName" name="userName" placeholder="John" required />
                     </div>
-                    <div class="field">
+                    <div class="field" th:if="${#fields.hasErrors('userSurname')}" th:errors="*{userSurname}">
                         <label for="userSurname">Surname</label>
-                        <input type="text" id="userSurname" name="userSurname" placeholder="Doe" required />
+                        <input type="text" id="userSurname" th:field="*{userSurname}" name="userSurname" placeholder="Doe" required />
                     </div>
                 </div>
 
-                <div class="field">
+                <div class="field" th:if="${#fields.hasErrors('userEmail')}" th:errors="*{userEmail}">
                     <label for="userEmail">E-mail</label>
-                    <input type="email" id="userEmail" name="userEmail" placeholder="user@gmail.com" required />
+                    <input type="email" id="userEmail"  th:field="*{userEmail}" name="userEmail" placeholder="user@gmail.com" required />
                 </div>
 
-                <div class="field">
+                <div class="field" th:if="${#fields.hasErrors('userPassword')}" th:errors="*{userPassword}">
                     <label for="userPassword">Password</label>
-                    <input type="password" id="userPassword" name="userPassword" placeholder="••••••••" required />
+                    <input type="password" id="userPassword" th:field="*{userPassword}" name="userPassword" placeholder="••••••••" required />
                 </div>
 
-                <div class="field">
+                <div class="field" th:if="${#fields.hasErrors('userPhone')}" th:errors="*{userPhone}">
                     <label for="userPhone">Phone <span class="optional">(optional)</span></label>
-                    <input type="tel" id="userPhone" name="userPhone" placeholder="05XX XXX XX XX" />
+                    <input type="tel" id="userPhone" name="userPhone" th:field="*{userPhone}" placeholder="05XX XXX XX XX" />
                 </div>
 
                 <button type="submit">Sign Up</button>
