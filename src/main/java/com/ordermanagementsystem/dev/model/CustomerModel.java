@@ -40,6 +40,6 @@ public class CustomerModel {
     private String customerPhone;
 
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
-    private List<ProductsModel> orders = new ArrayList<>();
+    private List<OrdersModel> orders = new ArrayList<>();
 
 }
