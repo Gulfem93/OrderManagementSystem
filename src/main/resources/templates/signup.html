@@ -3,45 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>Signup</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/signup.css}">
 </head>
 <body>
     <header></header>
     <main>
-        <form th:action="@{/signup}" method="post">
-            <label for="userRole">ROLE</label>
-            <select id="userRole" name="userRole">
-                <option value="OWNER">Owner</option>
-                <option value="CUSTOMER">Customer</option>
-            </select>
-            <div>
-                <label for="userName">User Name</label>
-                <input type="text" id="userName" name="userName" placeholder="user" required />
-            </div>
-            <div>
-                <label for="userSurname">User Surname</label>
-                <input type="text" id="userSurname" name="userSurname" placeholder="Surname" required />
-            </div>
-            <div>
-                <label for="userEmail">E-mail</label>
-                <input type="email" id="userEmail" name="userEmail" placeholder="user@gmail.com" required />
-            </div>
+        <div class="container">
+            <form th:action="@{/signup}" method="post" class="form_signup">
+                <div class="form_header">
+                    <h1 class="label_signup">Create Account</h1>
+                    <p class="subtitle">Sign up to start managing your orders</p>
+                </div>
 
-            <div>
-                <label for="userPassword">Password</label>
-                <input type="password" id="userPassword" name="userPassword" placeholder="*********" required />
-            </div>
-            
-            <div>
-                <label for="userPhone">Phone</label>
-                <input type="tel" id="userPhone" name="userPhone" placeholder="05XX XXX XX XX" />
-            </div>
+                <div class="field">
+                    <label for="userRole">Role</label>
+                    <select id="userRole" name="userRole">
+                        <option value="OWNER">Owner</option>
+                        <option value="CUSTOMER">Customer</option>
+                    </select>
+                </div>
 
-            <button type="submit">SIGNUP</button>
-        </form>
+                <div class="row">
+                    <div class="field">
+                        <label for="userName">Name</label>
+                        <input type="text" id="userName" name="userName" placeholder="John" required />
+                    </div>
+                    <div class="field">
+                        <label for="userSurname">Surname</label>
+                        <input type="text" id="userSurname" name="userSurname" placeholder="Doe" required />
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label for="userEmail">E-mail</label>
+                    <input type="email" id="userEmail" name="userEmail" placeholder="user@gmail.com" required />
+                </div>
+
+                <div class="field">
+                    <label for="userPassword">Password</label>
+                    <input type="password" id="userPassword" name="userPassword" placeholder="••••••••" required />
+                </div>
+
+                <div class="field">
+                    <label for="userPhone">Phone <span class="optional">(optional)</span></label>
+                    <input type="tel" id="userPhone" name="userPhone" placeholder="05XX XXX XX XX" />
+                </div>
+
+                <button type="submit">Sign Up</button>
+
+                <p class="switch_link">Already have an account? <a th:href="@{/login}">Log in</a></p>
+            </form>
+        </div>
     </main>
-
     <footer></footer>
 </body>
 </html>

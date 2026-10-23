@@ -3,7 +3,7 @@ package com.ordermanagementsystem.dev.data;
 import lombok.Data;
 
 @Data
-public class UserData {
+public class UsersData {
     private String userEmail;
     private String userPassword;
     private String userName;

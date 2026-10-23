@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 
-import com.ordermanagementsystem.dev.data.UserData;
+import com.ordermanagementsystem.dev.data.UsersData;
 
 @Controller
 public class SignupController {
@@ -29,7 +29,7 @@ public class SignupController {
 
     @PostMapping("/signup")
     public String postSignupPage(
-            @Valid @ModelAttribute("userData") UserData userData, BindingResult bindingResult) {
+            @Valid @ModelAttribute("userData") UsersData userData, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return "signup";
         }

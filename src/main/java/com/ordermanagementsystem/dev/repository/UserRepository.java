@@ -5,13 +5,13 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.ordermanagementsystem.dev.model.UserModel;
+import com.ordermanagementsystem.dev.model.UsersModel;
 
 @Repository
-public interface UserRepository extends JpaRepository<UserModel, Long> {
-    Optional<UserModel> findByUserEmail(String userEmail);
+public interface UserRepository extends JpaRepository<UsersModel, Long> {
+    Optional<UsersModel> findByUserEmail(String userEmail);
 
-    Optional<UserModel> findByUserName(String userName);
+    Optional<UsersModel> findByUserName(String userName);
 
     boolean existsByUserName(String userName);
 

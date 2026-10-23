@@ -15,7 +15,7 @@ import lombok.Setter;
 @Table(name = "users")
 @Getter
 @Setter
-public class UserModel {
+public class UsersModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;

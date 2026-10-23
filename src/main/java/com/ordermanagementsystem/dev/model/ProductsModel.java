@@ -12,10 +12,10 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name = "product")
+@Table(name = "orders")
 @Getter
 @Setter
-public class ProductModel {
+public class ProductsModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long productId;
@@ -31,4 +31,5 @@ public class ProductModel {
 
     @Column
     private Long productStock;
+
 }

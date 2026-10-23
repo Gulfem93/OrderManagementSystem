@@ -3,8 +3,8 @@ package com.ordermanagementsystem.dev.service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.ordermanagementsystem.dev.data.UserData;
-import com.ordermanagementsystem.dev.model.UserModel;
+import com.ordermanagementsystem.dev.data.UsersData;
+import com.ordermanagementsystem.dev.model.UsersModel;
 import com.ordermanagementsystem.dev.repository.UserRepository;
 
 @Service
@@ -18,12 +18,12 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public UserModel register(UserData userData) {
+    public UsersModel register(UsersData userData) {
         if (userRepository.existsByUserEmail(userData.getUserEmail())) {
             throw new IllegalArgumentException("A user with this email address is already registered.");
         }
 
-        UserModel usermodel = new UserModel();
+        UsersModel usermodel = new UsersModel();
         usermodel.setUserEmail(userData.getUserEmail());
         usermodel.setUserName(userData.getUserName());
         usermodel.setUserPassword(passwordEncoder.encode(userData.getUserPassword()));
