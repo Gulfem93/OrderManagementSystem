@@ -39,4 +39,15 @@ public class UserService {
 
         return userRepository.save(usermodel);
     }
+
+    public UsersData getUserData(String userEmail) {
+        UsersData userData = new UsersData();
+        userRepository.findByUserEmail(userEmail).ifPresent(user -> {
+            userData.setUserName(user.getUserName());
+            userData.setUserSurname(user.getUserSurname());
+            userData.setUserEmail(user.getUserEmail());
+            userData.setUserRole(user.getUserRole());
+        });
+        return userData;
+    }
 }
