@@ -14,5 +14,7 @@ public interface OrderRepository extends JpaRepository<OrdersModel, Long> {
 
     Long countByOrderStatus(String orderStatus);
 
+    List<OrdersModel> findTop5ByCustomer_CustomerEmailOrderByOrderDateDesc(String customerEmail);
+
     List<OrdersModel> findByOrderDateBetween(LocalDateTime start, LocalDateTime end);
 }

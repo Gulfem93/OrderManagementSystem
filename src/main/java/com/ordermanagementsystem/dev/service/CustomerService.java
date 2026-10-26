@@ -29,4 +29,8 @@ public class CustomerService {
 
         return customerRepository.save(cModel);
     }
+
+    public long countCustomers() {
+        return customerRepository.count();
+    }
 }

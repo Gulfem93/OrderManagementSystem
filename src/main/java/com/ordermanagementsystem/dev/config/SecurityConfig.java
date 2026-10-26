@@ -2,6 +2,7 @@ package com.ordermanagementsystem.dev.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 
@@ -14,6 +15,8 @@ public class SecurityConfig {
                                                 .requestMatchers("/signup", "/login", "/css/**", "/error").permitAll()
                                                 .requestMatchers("/admin/**").hasRole("ADMIN")
                                                 .requestMatchers("/customers/**", "/reports/**").hasRole("OWNER")
+                                                // Ürün listesini herkes görür, ürün ekleme/değiştirme sadece OWNER
+                                                .requestMatchers(HttpMethod.POST, "/products/**").hasRole("OWNER")
                                                 .anyRequest().authenticated())
                                 .formLogin(form -> form
                                                 .loginPage("/login")

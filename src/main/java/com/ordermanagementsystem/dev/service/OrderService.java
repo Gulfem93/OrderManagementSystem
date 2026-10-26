@@ -44,4 +44,17 @@ public class OrderService {
     public List<OrdersModel> getOrdersByCustomer(Long customerId) {
         return orderRepository.findByCustomer_CustomerId(customerId);
     }
+
+    // Ana sayfadaki "Recent Orders" tablosu için
+    public List<OrdersModel> getRecentOrdersByCustomerEmail(String customerEmail) {
+        return orderRepository.findTop5ByCustomer_CustomerEmailOrderByOrderDateDesc(customerEmail);
+    }
+
+    public long countOrders() {
+        return orderRepository.count();
+    }
+
+    public long countOrdersByStatus(String orderStatus) {
+        return orderRepository.countByOrderStatus(orderStatus);
+    }
 }

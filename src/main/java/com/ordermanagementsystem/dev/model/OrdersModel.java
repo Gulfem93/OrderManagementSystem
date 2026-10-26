@@ -1,5 +1,6 @@
 package com.ordermanagementsystem.dev.model;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,4 +40,16 @@ public class OrdersModel {
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItemModel> items = new ArrayList<>();
+
+    // Not stored in the database; calculated from the order items
+    public BigDecimal getTotalPrice() {
+        BigDecimal total = BigDecimal.ZERO;
+        for (OrderItemModel item : items) {
+            if (item.getOrderitemUnitPrice() != null && item.getOrderitemQuantity() != null) {
+                total = total.add(item.getOrderitemUnitPrice()
+                        .multiply(BigDecimal.valueOf(item.getOrderitemQuantity())));
+            }
+        }
+        return total;
+    }
 }
