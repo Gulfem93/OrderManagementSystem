@@ -29,7 +29,7 @@ public class UserService {
         usermodel.setUserPassword(passwordEncoder.encode(userData.getUserPassword()));
         usermodel.setUserSurname(userData.getUserSurname());
         usermodel.setUserPhone(userData.getUserPhone());
-        if (userData.getUserRole().isEmpty()) {
+        if (userData.getUserRole() == null || userData.getUserRole().isBlank()) {
             usermodel.setUserRole("USER");
         } else {
             usermodel.setUserRole(userData.getUserRole());

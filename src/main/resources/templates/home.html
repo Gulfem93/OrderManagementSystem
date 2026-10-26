@@ -1,19 +1,224 @@
 <!DOCTYPE html>
-<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-    <link rel="stylesheet" th:href="@{/css/login.css}">
+    <title>Home</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/home.css}">
 </head>
-<body>
-    <header></header>
-    <main>
-        <form th:action="@{/}" method="get">
-            Hoş Geldin
-        </form>
-    </main>
+<!-- isOwner: userRole OWNER veya ROLE_OWNER ise true -->
+<body th:object="${userData}"
+      th:with="isOwner=${userData.userRole != null and #strings.toUpperCase(userData.userRole).endsWith('OWNER')}">
+    <div class="layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <a class="brand" th:href="@{/}">
+                <span class="brand_logo">OM</span>
+                <span class="brand_name">Order Management</span>
+            </a>
 
-    <footer></footer>
+            <!-- ===== OWNER MENÜSÜ ===== -->
+            <nav class="menu" th:if="${isOwner}">
+                <a class="menu_item active" th:href="@{/}">
+                    <svg viewBox="0 0 24 24"><path d="M3 3h7v9H3zM14 3h7v5h-7zM14 12h7v9h-7zM3 16h7v5H3z"/></svg>
+                    <span>Dashboard</span>
+                </a>
+                <a class="menu_item" th:href="@{/orders}">
+                    <svg viewBox="0 0 24 24"><path d="M6 2h12l2 4v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6l2-4zm0 4h12M9 10h6M9 14h6"/></svg>
+                    <span>Orders</span>
+                </a>
+                <a class="menu_item" th:href="@{/products}">
+                    <svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5 9 5 9-5zM3 8v8l9 5 9-5V8M12 13v8"/></svg>
+                    <span>Products &amp; Stock</span>
+                </a>
+                <a class="menu_item" th:href="@{/customers}">
+                    <svg viewBox="0 0 24 24"><path d="M16 11a4 4 0 1 0-8 0M4 21a8 8 0 0 1 16 0M12 3a4 4 0 1 1 0 8 4 4 0 0 1 0-8z"/></svg>
+                    <span>Customers</span>
+                </a>
+                <a class="menu_item" th:href="@{/reports}">
+                    <svg viewBox="0 0 24 24"><path d="M3 3v18h18M7 15l4-4 3 3 6-6"/></svg>
+                    <span>Reports</span>
+                </a>
+            </nav>
+
+            <!-- ===== CUSTOMER MENÜSÜ ===== -->
+            <nav class="menu" th:unless="${isOwner}">
+                <a class="menu_item active" th:href="@{/}">
+                    <svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg>
+                    <span>Home</span>
+                </a>
+                <a class="menu_item" th:href="@{/products}">
+                    <svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5 9 5 9-5zM3 8v8l9 5 9-5V8M12 13v8"/></svg>
+                    <span>Shop</span>
+                </a>
+                <a class="menu_item" th:href="@{/orders}">
+                    <svg viewBox="0 0 24 24"><path d="M6 2h12l2 4v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6l2-4zm0 4h12M9 10h6M9 14h6"/></svg>
+                    <span>My Orders</span>
+                </a>
+                <a class="menu_item" th:href="@{/profile}">
+                    <svg viewBox="0 0 24 24"><path d="M16 11a4 4 0 1 0-8 0M4 21a8 8 0 0 1 16 0M12 3a4 4 0 1 1 0 8 4 4 0 0 1 0-8z"/></svg>
+                    <span>Account</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Page content -->
+        <div class="content">
+            <header class="topbar">
+                <h1 class="page_title" th:text="${isOwner} ? 'Owner Dashboard' : 'Home'">Dashboard</h1>
+
+                <div class="dropdown">
+                    <button type="button" class="dropdown_btn" aria-haspopup="true">
+                        <span class="avatar"
+                              th:text="${#strings.isEmpty(userData.userName)} ? '?' : ${#strings.toUpperCase(#strings.substring(userData.userName, 0, 1))}">?</span>
+                        <span class="dropdown_label" th:text="*{userName}">User</span>
+                        <svg class="chevron" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+                    </button>
+
+                    <div class="dropdown_content">
+                        <div class="dropdown_header">
+                            <span class="user_name" th:text="*{userName} + ' ' + (*{userSurname} ?: '')">User</span>
+                            <span class="user_email" th:text="*{userEmail}">user@mail.com</span>
+                            <span class="user_role" th:text="*{userRole}">ROLE</span>
+                        </div>
+                        <a th:href="@{/orders}" th:text="${isOwner} ? 'All Orders' : 'My Orders'">My Orders</a>
+                        <a th:href="@{/profile}">Account Details</a>
+                        <hr>
+                        <form th:action="@{/logout}" method="post">
+                            <button type="submit" class="logout_btn">Logout</button>
+                        </form>
+                    </div>
+                </div>
+            </header>
+
+            <!-- ================= OWNER İÇERİĞİ ================= -->
+            <main th:if="${isOwner}">
+                <section class="hero">
+                    <h2>Welcome back, <span class="highlight" th:text="*{userName}"></span>!</h2>
+                    <p>Here is an overview of your business today.</p>
+                </section>
+
+                <!-- Controller "stats" göndermezse 0 gösterir -->
+                <section class="stats">
+                    <div class="stat">
+                        <span class="stat_label">Total Orders</span>
+                        <span class="stat_value" th:text="${stats?.totalOrders} ?: 0">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat_label">Pending Orders</span>
+                        <span class="stat_value stat_warn" th:text="${stats?.pendingOrders} ?: 0">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat_label">Low Stock Products</span>
+                        <span class="stat_value stat_danger" th:text="${stats?.lowStockProducts} ?: 0">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat_label">Customers</span>
+                        <span class="stat_value" th:text="${stats?.totalCustomers} ?: 0">0</span>
+                    </div>
+                </section>
+
+                <section class="cards">
+                    <a class="card" th:href="@{/orders}">
+                        <span class="card_icon icon_orders">
+                            <svg viewBox="0 0 24 24"><path d="M6 2h12l2 4v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6l2-4zm0 4h12M9 10h6M9 14h6"/></svg>
+                        </span>
+                        <h3>Manage Orders</h3>
+                        <p>Review all orders and update their status.</p>
+                        <span class="card_link">Go &rarr;</span>
+                    </a>
+
+                    <a class="card" th:href="@{/products}">
+                        <span class="card_icon icon_products">
+                            <svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5 9 5 9-5zM3 8v8l9 5 9-5V8M12 13v8"/></svg>
+                        </span>
+                        <h3>Products &amp; Stock</h3>
+                        <p>Add products and update price and stock information.</p>
+                        <span class="card_link">Go &rarr;</span>
+                    </a>
+
+                    <a class="card" th:href="@{/customers}">
+                        <span class="card_icon icon_customers">
+                            <svg viewBox="0 0 24 24"><path d="M16 11a4 4 0 1 0-8 0M4 21a8 8 0 0 1 16 0M12 3a4 4 0 1 1 0 8 4 4 0 0 1 0-8z"/></svg>
+                        </span>
+                        <h3>Customers</h3>
+                        <p>Review customer information and order history.</p>
+                        <span class="card_link">Go &rarr;</span>
+                    </a>
+
+                    <a class="card" th:href="@{/reports}">
+                        <span class="card_icon icon_reports">
+                            <svg viewBox="0 0 24 24"><path d="M3 3v18h18M7 15l4-4 3 3 6-6"/></svg>
+                        </span>
+                        <h3>Reports</h3>
+                        <p>See sales and stock reports.</p>
+                        <span class="card_link">Go &rarr;</span>
+                    </a>
+                </section>
+            </main>
+
+            <!-- ================= CUSTOMER İÇERİĞİ ================= -->
+            <main th:unless="${isOwner}">
+                <section class="hero">
+                    <h2>Hi, <span class="highlight" th:text="*{userName}"></span>!</h2>
+                    <p>Browse products, place orders and track your deliveries.</p>
+                </section>
+
+                <section class="cards">
+                    <a class="card" th:href="@{/products}">
+                        <span class="card_icon icon_products">
+                            <svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5 9 5 9-5zM3 8v8l9 5 9-5V8M12 13v8"/></svg>
+                        </span>
+                        <h3>Shop</h3>
+                        <p>Browse available products and place a new order.</p>
+                        <span class="card_link">Go &rarr;</span>
+                    </a>
+
+                    <a class="card" th:href="@{/orders}">
+                        <span class="card_icon icon_orders">
+                            <svg viewBox="0 0 24 24"><path d="M6 2h12l2 4v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6l2-4zm0 4h12M9 10h6M9 14h6"/></svg>
+                        </span>
+                        <h3>My Orders</h3>
+                        <p>Track the status of your orders.</p>
+                        <span class="card_link">Go &rarr;</span>
+                    </a>
+
+                    <a class="card" th:href="@{/profile}">
+                        <span class="card_icon icon_customers">
+                            <svg viewBox="0 0 24 24"><path d="M16 11a4 4 0 1 0-8 0M4 21a8 8 0 0 1 16 0M12 3a4 4 0 1 1 0 8 4 4 0 0 1 0-8z"/></svg>
+                        </span>
+                        <h3>Account</h3>
+                        <p>Update your personal and address information.</p>
+                        <span class="card_link">Go &rarr;</span>
+                    </a>
+                </section>
+
+                <!-- Controller "recentOrders" gönderirse görünür -->
+                <section class="recent" th:if="${recentOrders != null}">
+                    <h3>Recent Orders</h3>
+                    <p class="empty" th:if="${#lists.isEmpty(recentOrders)}">You have no orders yet.</p>
+                    <table th:unless="${#lists.isEmpty(recentOrders)}">
+                        <thead>
+                        <tr><th>Order #</th><th>Date</th><th>Total</th><th>Status</th></tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="o : ${recentOrders}">
+                            <td th:text="${o.id}">1</td>
+                            <td th:text="${#temporals.format(o.createdAt, 'dd.MM.yyyy')}">01.01.2026</td>
+                            <td th:text="${#numbers.formatDecimal(o.totalPrice, 1, 2)} + ' ₺'">0.00 ₺</td>
+                            <td><span class="badge" th:text="${o.status}">PENDING</span></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </section>
+            </main>
+
+            <footer class="home_footer">
+            </footer>
+        </div>
+    </div>
 </body>
 </html>
