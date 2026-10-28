@@ -35,6 +35,10 @@ public class UserService {
             usermodel.setUserRole(userData.getUserRole());
         }
 
+        if ("OWNER".equals(usermodel.getUserRole())) {
+            usermodel.setCompanyName(userData.getCompanyName().trim());
+        }
+
         usermodel.setUserActive(true);
 
         return userRepository.save(usermodel);
@@ -46,6 +50,7 @@ public class UserService {
             userData.setUserName(user.getUserName());
             userData.setUserSurname(user.getUserSurname());
             userData.setUserEmail(user.getUserEmail());
+            userData.setCompanyName(user.getCompanyName());
             userData.setUserRole(user.getUserRole());
         });
         return userData;

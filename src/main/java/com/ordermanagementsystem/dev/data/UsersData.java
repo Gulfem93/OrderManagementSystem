@@ -10,5 +10,6 @@ public class UsersData {
     private String userSurname;
     private Boolean userActive;
     private String userRole;
+    private String companyName;
     private String userPhone;
 }

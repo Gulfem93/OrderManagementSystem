@@ -34,6 +34,10 @@ public class SignupController {
     @PostMapping("/signup")
     public String postSignupPage(
             @Valid @ModelAttribute("userData") UsersData userData, BindingResult bindingResult) {
+        if ("OWNER".equals(userData.getUserRole())
+                && (userData.getCompanyName() == null || userData.getCompanyName().isBlank())) {
+            bindingResult.rejectValue("companyName", "required", "Company name is required for owners");
+        }
         if (bindingResult.hasErrors()) {
             return "signup";
         }

@@ -127,6 +127,10 @@ main {
   gap: 6px;
 }
 
+.field[hidden] {
+  display: none;
+}
+
 .form_signup label {
   font-size: 13px;
   font-weight: 600;

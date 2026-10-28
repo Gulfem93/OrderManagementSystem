@@ -42,5 +42,8 @@ public class UsersModel {
     private Boolean userActive;
 
     @Column
+    private String companyName;
+
+    @Column
     private String userPhone;
 }

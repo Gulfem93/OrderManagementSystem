@@ -21,10 +21,19 @@
 
                 <div class="field">
                     <label for="userRole">Role</label>
-                    <select id="userRole" name="userRole">
-                        <option value="OWNER">Owner</option>
-                        <option value="CUSTOMER">Customer</option>
+                    <select id="userRole" th:field="*{userRole}" required>
+                        <option value="" disabled th:selected="${userData.userRole == null}">Select a role</option>
+                        <option th:value="OWNER">Owner</option>
+                        <option th:value="CUSTOMER">Customer</option>
                     </select>
+                </div>
+
+                <div class="field" id="companyField" hidden>
+                    <label for="companyName">Company Name</label>
+                    <input type="text" th:field="*{companyName}" placeholder="Acme Ltd." required disabled />
+                    <span class="alert alert_error"
+                        th:if="${#fields.hasErrors('companyName')}"
+                        th:errors="*{companyName}"></span>
                 </div>
 
                 <div class="row">
@@ -63,5 +72,21 @@
         </div>
     </main>
     <footer></footer>
+    <script>
+        (function () {
+            const role = document.getElementById("userRole");
+            const companyField = document.getElementById("companyField");
+            const companyName = document.getElementById("companyName");
+
+            function toggleCompany() {
+                const isOwner = role.value === "OWNER";
+                companyField.hidden = !isOwner;
+                companyName.disabled = !isOwner;
+            }
+
+            role.addEventListener("change", toggleCompany);
+            toggleCompany();
+        })();
+    </script>
 </body>
 </html>
