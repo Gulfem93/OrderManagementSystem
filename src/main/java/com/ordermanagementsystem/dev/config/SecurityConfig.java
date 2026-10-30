@@ -17,6 +17,7 @@ public class SecurityConfig {
                                                 .requestMatchers("/customers/**", "/reports/**").hasRole("OWNER")
                                                 // Ürün listesini herkes görür, ürün ekleme/değiştirme sadece OWNER
                                                 .requestMatchers(HttpMethod.POST, "/products/**").hasRole("OWNER")
+                                                .requestMatchers(HttpMethod.POST, "/orders/**").hasRole("OWNER")
                                                 .anyRequest().authenticated())
                                 .formLogin(form -> form
                                                 .loginPage("/login")

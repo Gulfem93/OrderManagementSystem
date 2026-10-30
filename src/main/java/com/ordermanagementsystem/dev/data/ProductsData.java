@@ -15,6 +15,9 @@ public class ProductsData {
     @NotBlank(message = "Product name cannot be blank!")
     private String productName;
 
+    @NotBlank(message = "Product category cannot be blank!")
+    private String productCategory;
+
     @NotNull(message = "Price is required!")
     @PositiveOrZero(message = "Price cannot be negative!")
     private BigDecimal productPrice;

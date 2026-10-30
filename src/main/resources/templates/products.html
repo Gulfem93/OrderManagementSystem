@@ -93,6 +93,8 @@
 
         <main>
             <div th:if="${param.added}" class="notice notice_success">Product added successfully.</div>
+            <div th:if="${param.cartAdded}" class="notice notice_success">Ürün sepete eklendi.</div>
+            <div th:if="${cartError}" class="notice notice_error" th:text="${cartError}">Hata</div>
 
             <!-- ============ OWNER: ÜRÜN EKLEME FORMU ============ -->
             <section class="panel" th:if="${isOwner}">
@@ -109,6 +111,12 @@
                         <label for="productName">Product Name</label>
                         <input type="text" id="productName" th:field="*{productName}" placeholder="Wireless Mouse" required />
                         <span class="field_error" th:if="${#fields.hasErrors('productName')}" th:errors="*{productName}"></span>
+                    </div>
+
+                    <div class="field">
+                        <label for="productCategory">Category</label>
+                        <input type="text" id="productCategory" th:field="*{productCategory}" placeholder="Electronics" required />
+                        <span class="field_error" th:if="${#fields.hasErrors('productCategory')}" th:errors="*{productCategory}"></span>
                     </div>
 
                     <div class="field">
@@ -129,9 +137,11 @@
                 </form>
             </section>
 
-            <!-- ============ ÜRÜN LİSTESİ (iki rol de görür) ============ -->
-            <section class="panel">
-                <h2 class="panel_title" th:text="${isOwner} ? 'All Products' : 'Available Products'">Products</h2>
+            <!-- ============ OWNER: KENDİ ŞİRKETİNİN ÜRÜNLERİ ============ -->
+            <section class="panel" th:if="${isOwner}">
+                <h2 class="panel_title">
+                    <span th:text="${userData.companyName} ?: 'My Company'">Company</span> Products
+                </h2>
 
                 <p class="empty" th:if="${#lists.isEmpty(products)}">No products yet.</p>
 
@@ -154,19 +164,66 @@
                                 th:text="${p.productPrice != null} ? ${#numbers.formatDecimal(p.productPrice, 1, 'POINT', 2, 'COMMA')} + ' ₺' : '-'">0,00 ₺</td>
                             <td class="num">
                                 <!-- Owner tam stok sayısını görür, düşük stok vurgulanır -->
-                                <span th:if="${isOwner}" class="stock"
+                                <span class="stock"
                                       th:classappend="${stock <= lowStock} ? 'stock_low'"
                                       th:text="${stock}">0</span>
-                                <!-- Customer sadece stokta var/yok görür -->
-                                <span th:unless="${isOwner}" class="stock"
-                                      th:classappend="${stock > 0} ? 'stock_ok' : 'stock_low'"
-                                      th:text="${stock > 0} ? 'In stock' : 'Out of stock'">In stock</span>
                             </td>
                         </tr>
                         </tbody>
                     </table>
                 </div>
             </section>
+
+            <!-- ============ CUSTOMER: ŞİRKETE GÖRE GRUPLANMIŞ ÜRÜNLER ============ -->
+            <th:block th:unless="${isOwner}">
+                <section class="panel" th:if="${#maps.isEmpty(productsByCompany)}">
+                    <h2 class="panel_title">Available Products</h2>
+                    <p class="empty">No products yet.</p>
+                </section>
+
+                <section class="panel" th:each="entry : ${productsByCompany}">
+                    <h2 class="panel_title company_title">
+                        <span class="company_badge"
+                              th:text="${#strings.toUpperCase(#strings.substring(entry.key, 0, 1))}">C</span>
+                        <span th:text="${entry.key}">Company</span>
+                        <span class="company_count" th:text="${#lists.size(entry.value)} + ' products'">0 products</span>
+                    </h2>
+
+                    <div class="table_wrap">
+                        <table class="product_table">
+                            <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th class="num">Price</th>
+                                <th class="num">Stock</th>
+                                <th></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="p : ${entry.value}"
+                                th:with="stock=${p.productStock ?: 0}">
+                                <td th:text="${p.productName}">Product</td>
+                                <td class="num"
+                                    th:text="${p.productPrice != null} ? ${#numbers.formatDecimal(p.productPrice, 1, 'POINT', 2, 'COMMA')} + ' ₺' : '-'">0,00 ₺</td>
+                                <td class="num">
+                                    <!-- Customer sadece stokta var/yok görür -->
+                                    <span class="stock"
+                                          th:classappend="${stock > 0} ? 'stock_ok' : 'stock_low'"
+                                          th:text="${stock > 0} ? 'In stock' : 'Out of stock'">In stock</span>
+                                </td>
+                                <td class="num">
+                                    <form th:action="@{/cart/add}" method="post">
+                                        <input type="hidden" name="productId" th:value="${p.productId}">
+                                        <input type="hidden" name="quantity" value="1">
+                                        <button type="submit" th:disabled="${stock <= 0}">Add to Cart</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </th:block>
         </main>
 
         <footer class="home_footer"></footer>

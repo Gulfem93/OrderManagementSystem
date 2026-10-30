@@ -1,1 +1,170 @@
 <!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${isOwner} ? 'Orders' : 'My Orders'">Orders</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/home.css}">
+    <link rel="stylesheet" th:href="@{/css/products.css}">
+</head>
+<body>
+<div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <a class="brand" th:href="@{/}">
+            <span class="brand_logo">OM</span>
+            <span class="brand_name">Order Management</span>
+        </a>
+
+        <!-- OWNER MENÜSÜ -->
+        <nav class="menu" th:if="${isOwner}">
+            <a class="menu_item" th:href="@{/}">
+                <svg viewBox="0 0 24 24"><path d="M3 3h7v9H3zM14 3h7v5h-7zM14 12h7v9h-7zM3 16h7v5H3z"/></svg>
+                <span>Dashboard</span>
+            </a>
+            <a class="menu_item active" th:href="@{/orders}">
+                <svg viewBox="0 0 24 24"><path d="M6 2h12l2 4v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6l2-4zm0 4h12M9 10h6M9 14h6"/></svg>
+                <span>Orders</span>
+            </a>
+            <a class="menu_item" th:href="@{/products}">
+                <svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5 9 5 9-5zM3 8v8l9 5 9-5V8M12 13v8"/></svg>
+                <span>Products &amp; Stock</span>
+            </a>
+            <a class="menu_item" th:href="@{/customers}">
+                <svg viewBox="0 0 24 24"><path d="M16 11a4 4 0 1 0-8 0M4 21a8 8 0 0 1 16 0M12 3a4 4 0 1 1 0 8 4 4 0 0 1 0-8z"/></svg>
+                <span>Customers</span>
+            </a>
+            <a class="menu_item" th:href="@{/reports}">
+                <svg viewBox="0 0 24 24"><path d="M3 3v18h18M7 15l4-4 3 3 6-6"/></svg>
+                <span>Reports</span>
+            </a>
+        </nav>
+
+        <!-- CUSTOMER MENÜSÜ -->
+        <nav class="menu" th:unless="${isOwner}">
+            <a class="menu_item" th:href="@{/}">
+                <svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg>
+                <span>Home</span>
+            </a>
+            <a class="menu_item" th:href="@{/products}">
+                <svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5 9 5 9-5zM3 8v8l9 5 9-5V8M12 13v8"/></svg>
+                <span>Shop</span>
+            </a>
+            <a class="menu_item active" th:href="@{/orders}">
+                <svg viewBox="0 0 24 24"><path d="M6 2h12l2 4v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6l2-4zm0 4h12M9 10h6M9 14h6"/></svg>
+                <span>My Orders</span>
+            </a>
+            <a class="menu_item" th:href="@{/profile}">
+                <svg viewBox="0 0 24 24"><path d="M16 11a4 4 0 1 0-8 0M4 21a8 8 0 0 1 16 0M12 3a4 4 0 1 1 0 8 4 4 0 0 1 0-8z"/></svg>
+                <span>Account</span>
+            </a>
+        </nav>
+    </aside>
+
+    <div class="content">
+        <header class="topbar">
+            <h1 class="page_title" th:text="${isOwner} ? 'Orders' : 'My Orders'">Orders</h1>
+
+            <div class="dropdown">
+                <button type="button" class="dropdown_btn" aria-haspopup="true">
+                    <span class="avatar"
+                          th:text="${#strings.isEmpty(userData.userName)} ? '?' : ${#strings.toUpperCase(#strings.substring(userData.userName, 0, 1))}">?</span>
+                    <span class="dropdown_label" th:text="${userData.userName}">User</span>
+                    <svg class="chevron" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+                </button>
+                <div class="dropdown_content">
+                    <div class="dropdown_header">
+                        <span class="user_name" th:text="${userData.userName} + ' ' + (${userData.userSurname} ?: '')">User</span>
+                        <span class="user_email" th:text="${userData.userEmail}">user@mail.com</span>
+                        <span class="user_role" th:text="${userData.userRole}">ROLE</span>
+                    </div>
+                    <a th:href="@{/orders}" th:text="${isOwner} ? 'All Orders' : 'My Orders'">My Orders</a>
+                    <a th:href="@{/profile}">Account Details</a>
+                    <hr>
+                    <form th:action="@{/logout}" method="post">
+                        <button type="submit" class="logout_btn">Logout</button>
+                    </form>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <!-- ============ CUSTOMER: SEPETE EKLENEN ÜRÜNLER ============ -->
+            <section class="panel" th:unless="${isOwner}">
+                <h2 class="panel_title">Sepetim</h2>
+
+                <p class="empty" th:if="${#lists.isEmpty(cartItems)}">Sepetinizde ürün yok.</p>
+
+                <div class="table_wrap" th:unless="${#lists.isEmpty(cartItems)}">
+                    <table class="product_table">
+                        <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Company</th>
+                            <th class="num">Unit Price</th>
+                            <th class="num">Quantity</th>
+                            <th class="num">Total</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="c : ${cartItems}">
+                            <td th:text="${c.product.productName}">Product</td>
+                            <td th:text="${c.product.companyName}">Company</td>
+                            <td class="num"
+                                th:text="${c.product.productPrice != null} ? ${#numbers.formatDecimal(c.product.productPrice, 1, 'POINT', 2, 'COMMA')} + ' ₺' : '-'">0,00 ₺</td>
+                            <td class="num" th:text="${c.quantity}">1</td>
+                            <td class="num"
+                                th:text="${#numbers.formatDecimal(c.lineTotal, 1, 'POINT', 2, 'COMMA')} + ' ₺'">0,00 ₺</td>
+                        </tr>
+                        </tbody>
+                        <tfoot>
+                        <tr>
+                            <th colspan="4">Cart Total</th>
+                            <th class="num"
+                                th:text="${#numbers.formatDecimal(cartTotal, 1, 'POINT', 2, 'COMMA')} + ' ₺'">0,00 ₺</th>
+                        </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </section>
+
+            <section class="panel">
+                <h2 class="panel_title" th:text="${isOwner} ? 'All Orders' : 'My Orders'">Orders</h2>
+
+                <p class="empty" th:if="${#lists.isEmpty(orders)}">No orders yet.</p>
+
+                <div class="table_wrap" th:unless="${#lists.isEmpty(orders)}">
+                    <table class="product_table">
+                        <thead>
+                        <tr>
+                            <th>Order #</th>
+                            <th>Date</th>
+                            <th th:if="${isOwner}">Customer</th>
+                            <th>Status</th>
+                            <th class="num">Total</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="o : ${orders}">
+                            <td class="code" th:text="'#' + ${o.orderId}">#1</td>
+                            <td th:text="${o.orderDate != null} ? ${#temporals.format(o.orderDate, 'dd.MM.yyyy HH:mm')} : '-'">01.01.2026</td>
+                            <td th:if="${isOwner}"
+                                th:text="${o.customer.customerName} + ' ' + (${o.customer.customerSurname} ?: '')">Customer</td>
+                            <td><span class="badge" th:text="${o.orderStatus}">PENDING</span></td>
+                            <td class="num"
+                                th:text="${#numbers.formatDecimal(o.totalPrice, 1, 'POINT', 2, 'COMMA')} + ' ₺'">0,00 ₺</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+
+        <footer class="home_footer"></footer>
+    </div>
+</div>
+</body>
+</html>

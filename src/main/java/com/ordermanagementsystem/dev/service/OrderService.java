@@ -45,6 +45,16 @@ public class OrderService {
         return orderRepository.findByCustomer_CustomerId(customerId);
     }
 
+    // Owner: tüm siparişler (Orders sayfası için), en yeni üstte
+    public List<OrdersModel> getAllOrders() {
+        return orderRepository.findAllByOrderByOrderDateDesc();
+    }
+
+    // Customer: kendi siparişleri (My Orders sayfası için), en yeni üstte
+    public List<OrdersModel> getOrdersByCustomerEmail(String customerEmail) {
+        return orderRepository.findByCustomer_CustomerEmailOrderByOrderDateDesc(customerEmail);
+    }
+
     // Ana sayfadaki "Recent Orders" tablosu için
     public List<OrdersModel> getRecentOrdersByCustomerEmail(String customerEmail) {
         return orderRepository.findTop5ByCustomer_CustomerEmailOrderByOrderDateDesc(customerEmail);

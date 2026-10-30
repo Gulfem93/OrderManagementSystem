@@ -32,4 +32,11 @@ public class ProductsModel {
     @Column
     private Long productStock;
 
+    @Column
+    private String productCategory;
+
+    // Ürünü ekleyen owner'ın şirketi
+    @Column
+    private String companyName;
+
 }
