@@ -61,6 +61,41 @@ public class CartService {
         return cartRepository.save(item);
     }
 
+    // Sepetteki kalemin adedini delta kadar değiştirir (+1 / -1); adet 0'a inerse kalem silinir
+    @Transactional
+    public void changeQuantity(String userEmail, Long cartItemId, int delta) {
+        CartItemModel item = findOwnItem(userEmail, cartItemId);
+        int newQuantity = item.getQuantity() + delta;
+
+        if (newQuantity < 1) {
+            cartRepository.delete(item);
+            return;
+        }
+
+        Long stock = item.getProduct().getProductStock();
+        if (stock == null || stock < newQuantity) {
+            throw new IllegalStateException("Yeterli stok yok");
+        }
+
+        item.setQuantity(newQuantity);
+        cartRepository.save(item);
+    }
+
+    @Transactional
+    public void removeItem(String userEmail, Long cartItemId) {
+        cartRepository.delete(findOwnItem(userEmail, cartItemId));
+    }
+
+    // Kullanıcı sadece kendi sepetindeki kalemi değiştirebilir
+    private CartItemModel findOwnItem(String userEmail, Long cartItemId) {
+        CartItemModel item = cartRepository.findById(cartItemId)
+                .orElseThrow(() -> new IllegalArgumentException("Sepet kalemi bulunamadı: " + cartItemId));
+        if (!item.getCustomer().getUserEmail().equals(userEmail)) {
+            throw new IllegalArgumentException("Sepet kalemi bulunamadı: " + cartItemId);
+        }
+        return item;
+    }
+
     // Customer: sepetindeki ürünler (My Orders sayfası için), en son eklenen üstte
     public List<CartItemModel> getCartItems(String userEmail) {
         return cartRepository.findByCustomer_UserEmailOrderByCartItemIdDesc(userEmail);

@@ -64,6 +64,58 @@
   border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
+/* Sepet: adet artır/azalt */
+.qty_control {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.qty_control form {
+  margin: 0;
+}
+
+.qty_btn {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  font-size: 16px;
+  line-height: 1;
+  color: inherit;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.qty_btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.qty_btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.qty_value {
+  min-width: 20px;
+  text-align: center;
+}
+
+.remove_btn {
+  padding: 4px 10px;
+  font-size: 13px;
+  color: #fca5a5;
+  background: transparent;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.remove_btn:hover {
+  background: rgba(239, 68, 68, 0.12);
+}
+
 /* Form */
 .product_form {
   display: grid;
@@ -139,6 +191,62 @@
 .btn_primary:hover {
   transform: translateY(-2px);
   box-shadow: 0 10px 22px rgba(220, 20, 60, 0.4);
+}
+
+/* Ürün listesi: Add to Cart */
+.cart_form {
+  margin: 0;
+}
+
+.btn_cart {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: #fff;
+  cursor: pointer;
+  background: linear-gradient(135deg, crimson, #7c3aed);
+  border: none;
+  border-radius: 999px;
+  box-shadow: 0 4px 12px rgba(220, 20, 60, 0.25);
+  transition: transform 0.15s, box-shadow 0.2s, filter 0.2s;
+}
+
+.btn_cart svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.btn_cart:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(220, 20, 60, 0.4);
+  filter: brightness(1.08);
+}
+
+.btn_cart:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 3px 8px rgba(220, 20, 60, 0.3);
+}
+
+.btn_cart:focus-visible {
+  outline: 2px solid #a78bfa;
+  outline-offset: 2px;
+}
+
+.btn_cart:disabled {
+  color: #94a3b8;
+  cursor: not-allowed;
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: none;
 }
 
 /* Tablo */

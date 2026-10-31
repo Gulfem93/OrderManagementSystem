@@ -212,10 +212,13 @@
                                           th:text="${stock > 0} ? 'In stock' : 'Out of stock'">In stock</span>
                                 </td>
                                 <td class="num">
-                                    <form th:action="@{/cart/add}" method="post">
+                                    <form class="cart_form" th:action="@{/cart/add}" method="post">
                                         <input type="hidden" name="productId" th:value="${p.productId}">
                                         <input type="hidden" name="quantity" value="1">
-                                        <button type="submit" th:disabled="${stock <= 0}">Add to Cart</button>
+                                        <button type="submit" class="btn_cart" th:disabled="${stock <= 0}">
+                                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.4 10.2a1 1 0 0 0 1 .8h8.8a1 1 0 0 0 1-.8L20 7H6.2M9 20a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm8 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></svg>
+                                            <span th:text="${stock > 0} ? 'Add to Cart' : 'Sold Out'">Add to Cart</span>
+                                        </button>
                                     </form>
                                 </td>
                             </tr>

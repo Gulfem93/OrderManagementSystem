@@ -92,9 +92,11 @@
         </header>
 
         <main>
+            <div th:if="${cartError}" class="notice notice_error" th:text="${cartError}">Hata</div>
+
             <!-- ============ CUSTOMER: SEPETE EKLENEN ÜRÜNLER ============ -->
             <section class="panel" th:unless="${isOwner}">
-                <h2 class="panel_title">Sepetim</h2>
+                <h2 class="panel_title">My Orders</h2>
 
                 <p class="empty" th:if="${#lists.isEmpty(cartItems)}">Sepetinizde ürün yok.</p>
 
@@ -107,6 +109,7 @@
                             <th class="num">Unit Price</th>
                             <th class="num">Quantity</th>
                             <th class="num">Total</th>
+                            <th></th>
                         </tr>
                         </thead>
                         <tbody>
@@ -115,9 +118,25 @@
                             <td th:text="${c.product.companyName}">Company</td>
                             <td class="num"
                                 th:text="${c.product.productPrice != null} ? ${#numbers.formatDecimal(c.product.productPrice, 1, 'POINT', 2, 'COMMA')} + ' ₺' : '-'">0,00 ₺</td>
-                            <td class="num" th:text="${c.quantity}">1</td>
+                            <td class="num">
+                                <div class="qty_control">
+                                    <form th:action="@{/cart/{id}/decrease(id=${c.cartItemId})}" method="post">
+                                        <button type="submit" class="qty_btn" aria-label="Decrease">−</button>
+                                    </form>
+                                    <span class="qty_value" th:text="${c.quantity}">1</span>
+                                    <form th:action="@{/cart/{id}/increase(id=${c.cartItemId})}" method="post">
+                                        <button type="submit" class="qty_btn" aria-label="Increase"
+                                                th:disabled="${c.product.productStock == null or c.quantity >= c.product.productStock}">+</button>
+                                    </form>
+                                </div>
+                            </td>
                             <td class="num"
                                 th:text="${#numbers.formatDecimal(c.lineTotal, 1, 'POINT', 2, 'COMMA')} + ' ₺'">0,00 ₺</td>
+                            <td class="num">
+                                <form th:action="@{/cart/{id}/remove(id=${c.cartItemId})}" method="post">
+                                    <button type="submit" class="remove_btn">Remove</button>
+                                </form>
+                            </td>
                         </tr>
                         </tbody>
                         <tfoot>
@@ -125,42 +144,14 @@
                             <th colspan="4">Cart Total</th>
                             <th class="num"
                                 th:text="${#numbers.formatDecimal(cartTotal, 1, 'POINT', 2, 'COMMA')} + ' ₺'">0,00 ₺</th>
+                            <th></th>
                         </tr>
                         </tfoot>
                     </table>
                 </div>
             </section>
 
-            <section class="panel">
-                <h2 class="panel_title" th:text="${isOwner} ? 'All Orders' : 'My Orders'">Orders</h2>
-
-                <p class="empty" th:if="${#lists.isEmpty(orders)}">No orders yet.</p>
-
-                <div class="table_wrap" th:unless="${#lists.isEmpty(orders)}">
-                    <table class="product_table">
-                        <thead>
-                        <tr>
-                            <th>Order #</th>
-                            <th>Date</th>
-                            <th th:if="${isOwner}">Customer</th>
-                            <th>Status</th>
-                            <th class="num">Total</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr th:each="o : ${orders}">
-                            <td class="code" th:text="'#' + ${o.orderId}">#1</td>
-                            <td th:text="${o.orderDate != null} ? ${#temporals.format(o.orderDate, 'dd.MM.yyyy HH:mm')} : '-'">01.01.2026</td>
-                            <td th:if="${isOwner}"
-                                th:text="${o.customer.customerName} + ' ' + (${o.customer.customerSurname} ?: '')">Customer</td>
-                            <td><span class="badge" th:text="${o.orderStatus}">PENDING</span></td>
-                            <td class="num"
-                                th:text="${#numbers.formatDecimal(o.totalPrice, 1, 'POINT', 2, 'COMMA')} + ' ₺'">0,00 ₺</td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </section>
+            
         </main>
 
         <footer class="home_footer"></footer>
