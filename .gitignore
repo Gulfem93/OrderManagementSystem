@@ -34,3 +34,6 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Yerel ayarlar (şifre içerir, GitHub'a gönderilmez) ###
+src/main/resources/application-dev.yml

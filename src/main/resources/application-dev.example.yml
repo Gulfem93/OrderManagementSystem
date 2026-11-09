@@ -13,8 +13,8 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/ordermanagementsystem
-    username: root
-    password: Secret@3210
+    username: <kullanici_adi>
+    password: <sifre>
 security:
   admin:
     # Virgülle ayrılmış e-postalar; bu kullanıcılar açılışta ADMIN yapılır
