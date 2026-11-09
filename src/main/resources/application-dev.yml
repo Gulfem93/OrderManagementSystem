@@ -16,7 +16,14 @@ spring:
     username: root
     password: Secret@3210
 security:
+  admin:
+    # Virgülle ayrılmış e-postalar; bu kullanıcılar açılışta ADMIN yapılır
+    emails: ${ADMIN_EMAILS:}
   jwt:
     expiration-time: 3600000
 default:
   locale: tr
+app:
+  seed:
+    # true ise açılışta admin hesabı oluşturulur (DataInitializer)
+    enabled: true

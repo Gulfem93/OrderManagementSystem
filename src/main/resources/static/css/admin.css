@@ -1,0 +1,133 @@
+/* Admin panel – home.css üzerine eklenir */
+
+.alert {
+  margin-bottom: 20px;
+  padding: 14px 16px;
+  font-size: 14px;
+  border-radius: 12px;
+  animation: fadeUp 0.4s ease-out;
+}
+
+.alert_success {
+  color: #86efac;
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+}
+
+.alert_error {
+  color: #fca5a5;
+  background: rgba(220, 20, 60, 0.12);
+  border: 1px solid rgba(220, 20, 60, 0.4);
+}
+
+.recent {
+  margin-top: 0;
+}
+
+.admin_table td {
+  vertical-align: middle;
+}
+
+.col_actions {
+  text-align: right !important;
+}
+
+.you_tag {
+  margin-left: 6px;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #a78bfa;
+  background: rgba(124, 58, 237, 0.18);
+  border-radius: 999px;
+}
+
+.role_form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.role_select {
+  padding: 8px 10px;
+  font-family: inherit;
+  font-size: 13px;
+  color: #f1f5f9;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.role_select:focus {
+  outline: none;
+  border-color: #a78bfa;
+}
+
+.btn {
+  padding: 7px 14px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: #f1f5f9;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.btn:disabled,
+.role_select:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn_ghost {
+  color: #c4b5fd;
+  border-color: rgba(167, 139, 250, 0.45);
+}
+
+.btn_ghost:hover:not(:disabled) {
+  background: rgba(124, 58, 237, 0.2);
+}
+
+.btn_danger {
+  color: #fca5a5;
+  border-color: rgba(220, 20, 60, 0.5);
+}
+
+.btn_danger:hover:not(:disabled) {
+  background: rgba(220, 20, 60, 0.2);
+}
+
+.btn_success {
+  color: #86efac;
+  border-color: rgba(34, 197, 94, 0.5);
+}
+
+.btn_success:hover:not(:disabled) {
+  background: rgba(34, 197, 94, 0.18);
+}
+
+.status {
+  display: inline-block;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  border-radius: 999px;
+}
+
+.status_active {
+  color: #86efac;
+  background: rgba(34, 197, 94, 0.15);
+}
+
+.status_inactive {
+  color: #94a3b8;
+  background: rgba(148, 163, 184, 0.15);
+}

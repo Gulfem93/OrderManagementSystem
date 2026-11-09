@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.ordermanagementsystem.dev.data.ProductsData;
 import com.ordermanagementsystem.dev.model.ProductsModel;
@@ -55,6 +56,49 @@ public class ProductService {
         product.setCompanyName(companyName);
 
         return productRepository.save(product);
+    }
+
+    // Owner > Edit: formu ürünün mevcut değerleriyle doldurur
+    public ProductsData getProductData(Long productId, String companyName) {
+        ProductsModel product = findOwnProduct(productId, companyName);
+
+        ProductsData data = new ProductsData();
+        data.setProductCode(product.getProductCode());
+        data.setProductName(product.getProductName());
+        data.setProductCategory(product.getProductCategory());
+        data.setProductPrice(product.getProductPrice());
+        data.setProductStock(product.getProductStock());
+        return data;
+    }
+
+    // Owner > Edit: sadece kendi şirketinin ürününü günceller.
+    // Satır kilitlenir; aynı anda gelen bir sipariş stoğu ezmez.
+    @Transactional
+    public ProductsModel editProduct(Long productId, ProductsData productsData, String companyName) {
+        ProductsModel product = productRepository.findByIdForUpdate(productId)
+                .filter(p -> companyName != null && companyName.equals(p.getCompanyName()))
+                .orElseThrow(() -> new IllegalArgumentException("Product not found."));
+
+        // Kod değiştiyse şirketin başka bir ürünüyle çakışmamalı
+        String code = productsData.getProductCode().trim();
+        productRepository.findByProductCodeAndCompanyName(code, companyName)
+                .filter(other -> !other.getProductId().equals(productId))
+                .ifPresent(other -> {
+                    throw new IllegalArgumentException("A product with this code already exists.");
+                });
+
+        product.setProductCode(code);
+        product.setProductName(productsData.getProductName().trim());
+        product.setProductCategory(productsData.getProductCategory());
+        product.setProductPrice(productsData.getProductPrice());
+        product.setProductStock(productsData.getProductStock());
+        return product;
+    }
+
+    private ProductsModel findOwnProduct(Long productId, String companyName) {
+        return productRepository.findById(productId)
+                .filter(p -> companyName != null && companyName.equals(p.getCompanyName()))
+                .orElseThrow(() -> new IllegalArgumentException("Product not found."));
     }
 
     public long countLowStock(long threshold) {

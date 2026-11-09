@@ -29,11 +29,12 @@ public class UserService {
         usermodel.setUserPassword(passwordEncoder.encode(userData.getUserPassword()));
         usermodel.setUserSurname(userData.getUserSurname());
         usermodel.setUserPhone(userData.getUserPhone());
-        if (userData.getUserRole() == null || userData.getUserRole().isBlank()) {
-            usermodel.setUserRole("USER");
-        } else {
-            usermodel.setUserRole(userData.getUserRole());
+        // Kayıt formundan sadece OWNER / CUSTOMER seçilebilir; ADMIN rolü yalnızca admin panelinden verilir
+        String role = userData.getUserRole() == null ? "" : userData.getUserRole().trim().toUpperCase();
+        if (!"OWNER".equals(role) && !"CUSTOMER".equals(role)) {
+            role = "CUSTOMER";
         }
+        usermodel.setUserRole(role);
 
         if ("OWNER".equals(usermodel.getUserRole())) {
             usermodel.setCompanyName(userData.getCompanyName().trim());

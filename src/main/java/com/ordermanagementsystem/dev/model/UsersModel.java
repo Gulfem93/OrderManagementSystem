@@ -1,7 +1,11 @@
 package com.ordermanagementsystem.dev.model;
 
+import com.ordermanagementsystem.enums.UserRole;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -46,4 +50,8 @@ public class UsersModel {
 
     @Column
     private String userPhone;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 24)
+    private UserRole role = UserRole.USER;
 }

@@ -1,6 +1,7 @@
 package com.ordermanagementsystem.dev.service;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -8,11 +9,17 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ordermanagementsystem.dev.data.CartItemData;
 import com.ordermanagementsystem.dev.model.CartItemModel;
+import com.ordermanagementsystem.dev.model.CustomerModel;
+import com.ordermanagementsystem.dev.model.OrderItemModel;
+import com.ordermanagementsystem.dev.model.OrdersModel;
 import com.ordermanagementsystem.dev.model.ProductsModel;
 import com.ordermanagementsystem.dev.model.UsersModel;
 import com.ordermanagementsystem.dev.repository.CartRepository;
+import com.ordermanagementsystem.dev.repository.CustomerRepository;
+import com.ordermanagementsystem.dev.repository.OrderRepository;
 import com.ordermanagementsystem.dev.repository.ProductRepository;
 import com.ordermanagementsystem.dev.repository.UserRepository;
+import com.ordermanagementsystem.enums.OrderStatus;
 
 @Service
 public class CartService {
@@ -20,13 +27,19 @@ public class CartService {
     private final CartRepository cartRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
+    private final OrderRepository orderRepository;
+    private final CustomerRepository customerRepository;
 
     public CartService(CartRepository cartRepository,
             ProductRepository productRepository,
-            UserRepository userRepository) {
+            UserRepository userRepository,
+            OrderRepository orderRepository,
+            CustomerRepository customerRepository) {
         this.cartRepository = cartRepository;
         this.productRepository = productRepository;
         this.userRepository = userRepository;
+        this.orderRepository = orderRepository;
+        this.customerRepository = customerRepository;
     }
 
     @Transactional
@@ -94,6 +107,57 @@ public class CartService {
             throw new IllegalArgumentException("Sepet kalemi bulunamadı: " + cartItemId);
         }
         return item;
+    }
+
+    // Sepeti siparişe çevirir: stokları düşer, sipariş oluşturur, sepeti boşaltır.
+    // Herhangi bir üründe stok yetmezse hiçbir değişiklik kaydedilmez (transaction geri alınır).
+    @Transactional
+    public OrdersModel checkout(String userEmail) {
+        List<CartItemModel> cartItems = cartRepository.findByCustomer_UserEmailOrderByCartItemIdDesc(userEmail);
+        if (cartItems.isEmpty()) {
+            throw new IllegalStateException("Sepetiniz boş");
+        }
+
+        OrdersModel order = new OrdersModel();
+        order.setCustomer(findOrCreateCustomer(cartItems.get(0).getCustomer()));
+        order.setOrderStatus(OrderStatus.PENDING);
+        order.setOrderDate(LocalDateTime.now());
+
+        for (CartItemModel cartItem : cartItems) {
+            ProductsModel product = productRepository.findByIdForUpdate(cartItem.getProduct().getProductId())
+                    .orElseThrow(() -> new IllegalArgumentException("Ürün bulunamadı"));
+
+            long quantity = cartItem.getQuantity();
+            Long stock = product.getProductStock();
+            if (stock == null || stock < quantity) {
+                throw new IllegalStateException("Yeterli stok yok: " + product.getProductName());
+            }
+            product.setProductStock(stock - quantity);
+
+            OrderItemModel orderItem = new OrderItemModel();
+            orderItem.setOrder(order);
+            orderItem.setProduct(product);
+            orderItem.setOrderitemQuantity(quantity);
+            orderItem.setOrderitemUnitPrice(product.getProductPrice());
+            order.getItems().add(orderItem);
+        }
+
+        OrdersModel saved = orderRepository.save(order);
+        cartRepository.deleteAll(cartItems);
+        return saved;
+    }
+
+    // Siparişler customers tablosuna bağlı; kullanıcının kaydı yoksa users bilgileriyle oluşturulur
+    private CustomerModel findOrCreateCustomer(UsersModel user) {
+        return customerRepository.findByCustomerEmail(user.getUserEmail())
+                .orElseGet(() -> {
+                    CustomerModel customer = new CustomerModel();
+                    customer.setCustomerEmail(user.getUserEmail());
+                    customer.setCustomerName(user.getUserName());
+                    customer.setCustomerSurname(user.getUserSurname());
+                    customer.setCustomerPhone(user.getUserPhone());
+                    return customerRepository.save(customer);
+                });
     }
 
     // Customer: sepetindeki ürünler (My Orders sayfası için), en son eklenen üstte

@@ -2,7 +2,10 @@ package com.ordermanagementsystem.dev.model;
 
 import java.math.BigDecimal;
 
+import com.ordermanagementsystem.enums.CategoryType;
+
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -32,8 +35,10 @@ public class ProductsModel {
     @Column
     private Long productStock;
 
+    // CategoryType enum'undan seçilir; veritabanında adı saklanır (ör. "LAPTOP")
     @Column
-    private String productCategory;
+    @Convert(converter = CategoryTypeConverter.class)
+    private CategoryType productCategory;
 
     // Ürünü ekleyen owner'ın şirketi
     @Column

@@ -163,6 +163,47 @@
   box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.25);
 }
 
+.field select {
+  width: 100%;
+  padding: 11px 14px;
+  font: inherit;
+  font-size: 14px;
+  color: #f1f5f9;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.field select:focus {
+  border-color: #a78bfa;
+  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.25);
+}
+
+/* Açılır listedeki seçenekler koyu arka planda okunsun */
+.field select option,
+.field select optgroup {
+  color: #f1f5f9;
+  background: #1e1b2e;
+}
+
+.category_tag {
+  display: inline-block;
+  padding: 3px 10px;
+  font-size: 12px;
+  color: #c4b5fd;
+  background: rgba(167, 139, 250, 0.12);
+  border-radius: 999px;
+}
+
+.category_missing {
+  font-size: 12px;
+  font-style: italic;
+  color: #fbbf24;
+}
+
 .field_error {
   font-size: 12px;
   color: #fb7185;
@@ -193,9 +234,529 @@
   box-shadow: 0 10px 22px rgba(220, 20, 60, 0.4);
 }
 
+/* Owner > Products: düzenleme */
+.form_actions {
+  gap: 10px;
+}
+
+.btn_secondary {
+  display: inline-flex;
+  align-items: center;
+  padding: 11px 22px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #cbd5e1;
+  text-decoration: none;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  transition: background 0.2s;
+}
+
+.btn_secondary:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.panel_editing {
+  border-color: rgba(167, 139, 250, 0.5);
+  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.15);
+}
+
+.product_table tbody tr.row_editing {
+  background: rgba(167, 139, 250, 0.1);
+}
+
+.edit_btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  font-size: 13px;
+  color: #c4b5fd;
+  text-decoration: none;
+  border: 1px solid rgba(167, 139, 250, 0.35);
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.edit_btn:hover {
+  background: rgba(167, 139, 250, 0.12);
+}
+
+.edit_btn svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 /* Ürün listesi: Add to Cart */
 .cart_form {
   margin: 0;
+}
+
+/* Order History: detay */
+.order_actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.order_actions form {
+  margin: 0;
+}
+
+.detail_btn {
+  padding: 4px 10px;
+  font: inherit;
+  font-size: 13px;
+  color: #c4b5fd;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid rgba(167, 139, 250, 0.35);
+  border-radius: 8px;
+}
+
+.detail_btn:hover,
+.detail_btn[aria-expanded="true"] {
+  background: rgba(167, 139, 250, 0.12);
+}
+
+.product_table tbody tr.order_detail:hover {
+  background: transparent;
+}
+
+.order_detail_box {
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+}
+
+.order_detail_meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+.detail_table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.detail_table th,
+.detail_table td {
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.detail_table th {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.detail_table .num {
+  text-align: right;
+}
+
+.detail_table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.order_detail_note {
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+/* Owner > Orders: durum filtresi */
+.status_filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.filter_chip {
+  padding: 5px 12px;
+  font-size: 13px;
+  color: #cbd5e1;
+  text-decoration: none;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.filter_chip:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.filter_chip.active {
+  color: #fff;
+  background: linear-gradient(135deg, crimson, #7c3aed);
+  border-color: transparent;
+}
+
+/* Owner > Orders: durum güncelleme */
+.status_form {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status_select {
+  padding: 4px 8px;
+  font: inherit;
+  font-size: 13px;
+  color: #f1f5f9;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+}
+
+/* Customer > Order History: sipariş takip çubuğu */
+.product_table tbody tr.order_track_row:hover {
+  background: transparent;
+}
+
+.order_track_row td {
+  padding-top: 0;
+}
+
+.order_track {
+  display: flex;
+  margin: 0;
+  padding: 4px 0 6px;
+  list-style: none;
+}
+
+.track_step {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+/* Adımlar arasındaki çizgi */
+.track_step:not(:first-child)::before {
+  content: "";
+  position: absolute;
+  top: 13px;
+  right: 50%;
+  width: 100%;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.track_step.done::before,
+.track_step.current::before {
+  background: linear-gradient(90deg, crimson, #7c3aed);
+}
+
+.track_dot {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #94a3b8;
+  background: #1e1b2e;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+}
+
+.track_step.done .track_dot {
+  color: #fff;
+  background: linear-gradient(135deg, crimson, #7c3aed);
+  border-color: transparent;
+}
+
+.track_step.current .track_dot {
+  color: #fff;
+  background: #1e1b2e;
+  border-color: #a78bfa;
+  box-shadow: 0 0 0 4px rgba(167, 139, 250, 0.25);
+  animation: trackPulse 1.6s ease-in-out infinite;
+}
+
+.track_step.done .track_label,
+.track_step.current .track_label {
+  color: #e2e8f0;
+  font-weight: 600;
+}
+
+@keyframes trackPulse {
+  50% { box-shadow: 0 0 0 7px rgba(167, 139, 250, 0.1); }
+}
+
+/* Reports */
+.report_grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 24px;
+}
+
+.report_wide {
+  grid-column: 1 / -1;
+}
+
+.month_chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.month_col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.month_value {
+  font-size: 12px;
+  color: #cbd5e1;
+  white-space: nowrap;
+}
+
+.month_track {
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+  max-width: 56px;
+  height: 160px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+}
+
+.month_bar {
+  width: 100%;
+  min-height: 3px;
+  background: linear-gradient(180deg, #7c3aed, crimson);
+  border-radius: 10px;
+  transition: height 0.6s ease-out;
+}
+
+.month_label {
+  font-size: 12px;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+.bar_list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bar_head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+
+.bar_label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bar_value {
+  font-size: 13px;
+  color: #cbd5e1;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.bar_track {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.bar_fill {
+  height: 100%;
+  background: linear-gradient(90deg, crimson, #7c3aed);
+  border-radius: 999px;
+}
+
+.month_track_short {
+  height: 110px;
+  max-width: 32px;
+}
+
+.trend {
+  margin-left: 6px;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.trend_up {
+  color: #4ade80;
+}
+
+.trend_down {
+  color: #f87171;
+}
+
+.fact_list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+
+.fact_list > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  font-size: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.fact_list > div:last-child {
+  border-bottom: none;
+}
+
+.fact_list dt {
+  color: #94a3b8;
+}
+
+.fact_list dd {
+  margin: 0;
+  font-weight: 600;
+  text-align: right;
+}
+
+.report_section_title {
+  margin: 12px 0 16px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.stat_link {
+  color: inherit;
+  text-decoration: none;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.stat_link:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.stat_hint {
+  font-size: 12px;
+  color: #64748b;
+}
+
+/* Dikkat isteyen kart (onay bekleyen / stokta olmayan) */
+.stat_alert {
+  border-color: rgba(245, 158, 11, 0.45);
+}
+
+.stat_alert .customer_stat_value {
+  color: #fbbf24;
+}
+
+@media (max-width: 900px) {
+  .report_grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .month_chart {
+    gap: 6px;
+  }
+
+  .month_value {
+    display: none;
+  }
+}
+
+/* Owner > Customers */
+.customer_stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.customer_stat {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+}
+
+.customer_stat_label {
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+.customer_stat_value {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.customer_name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.customer_avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #a78bfa, #6366f1);
+  border-radius: 50%;
+}
+
+.customer_email {
+  color: #cbd5e1;
+}
+
+/* Sepet: Satın Al */
+.checkout_form {
+  display: flex;
+  justify-content: flex-end;
+  margin: 16px 0 0;
 }
 
 .btn_cart {

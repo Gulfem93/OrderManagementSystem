@@ -57,6 +57,10 @@
                     <svg viewBox="0 0 24 24"><path d="M6 2h12l2 4v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6l2-4zm0 4h12M9 10h6M9 14h6"/></svg>
                     <span>My Orders</span>
                 </a>
+                <a class="menu_item" th:href="@{/reports}">
+                    <svg viewBox="0 0 24 24"><path d="M3 3v18h18M7 15l4-4 3 3 6-6"/></svg>
+                    <span>Reports</span>
+                </a>
                 <a class="menu_item" th:href="@{/profile}">
                     <svg viewBox="0 0 24 24"><path d="M16 11a4 4 0 1 0-8 0M4 21a8 8 0 0 1 16 0M12 3a4 4 0 1 1 0 8 4 4 0 0 1 0-8z"/></svg>
                     <span>Account</span>
@@ -208,7 +212,8 @@
                             <td th:text="${o.orderId}">1</td>
                             <td th:text="${#temporals.format(o.orderDate, 'dd.MM.yyyy')}">01.01.2026</td>
                             <td th:text="${#numbers.formatDecimal(o.totalPrice, 1, 2)} + ' ₺'">0.00 ₺</td>
-                            <td><span class="badge" th:text="${o.orderStatus}">PENDING</span></td>
+                            <td><span class="badge" th:classappend="${o.orderStatus?.cssClass}"
+                                      th:text="${o.orderStatus?.label} ?: '-'">Beklemede</span></td>
                         </tr>
                         </tbody>
                     </table>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/home.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body th:object="${userData}">
+    <div class="layout">
+        <aside class="sidebar">
+            <a class="brand" th:href="@{/admin}">
+                <span class="brand_logo">OM</span>
+                <span class="brand_name">Order Management</span>
+            </a>
+            <nav class="menu">
+                <a class="menu_item active" th:href="@{/admin}">
+                    <svg viewBox="0 0 24 24"><path d="M16 11a4 4 0 1 0-8 0M4 21a8 8 0 0 1 16 0M12 3a4 4 0 1 1 0 8 4 4 0 0 1 0-8z"/></svg>
+                    <span>Users</span>
+                </a>
+            </nav>
+        </aside>
+
+        <div class="content">
+            <header class="topbar">
+                <h1 class="page_title">Admin Panel</h1>
+
+                <div class="dropdown">
+                    <button type="button" class="dropdown_btn" aria-haspopup="true">
+                        <span class="avatar"
+                              th:text="${#strings.isEmpty(userData.userName)} ? 'A' : ${#strings.toUpperCase(#strings.substring(userData.userName, 0, 1))}">A</span>
+                        <span class="dropdown_label" th:text="*{userName} ?: 'Admin'">Admin</span>
+                        <svg class="chevron" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+                    </button>
+                    <div class="dropdown_content">
+                        <div class="dropdown_header">
+                            <span class="user_name" th:text="(*{userName} ?: '') + ' ' + (*{userSurname} ?: '')">Admin</span>
+                            <span class="user_email" th:text="*{userEmail}">admin@mail.com</span>
+                            <span class="user_role" th:text="*{userRole}">ADMIN</span>
+                        </div>
+                        <form th:action="@{/logout}" method="post">
+                            <button type="submit" class="logout_btn">Logout</button>
+                        </form>
+                    </div>
+                </div>
+            </header>
+
+            <main>
+                <div class="alert alert_success" th:if="${success}" th:text="${success}">Saved.</div>
+                <div class="alert alert_error" th:if="${error}" th:text="${error}">Error.</div>
+
+                <section class="stats">
+                    <div class="stat">
+                        <span class="stat_label">Users</span>
+                        <span class="stat_value" th:text="${stats.totalUsers}">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat_label">Total Orders</span>
+                        <span class="stat_value" th:text="${stats.totalOrders}">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat_label">Pending Orders</span>
+                        <span class="stat_value stat_warn" th:text="${stats.pendingOrders}">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat_label">Low Stock Products</span>
+                        <span class="stat_value stat_danger" th:text="${stats.lowStockProducts}">0</span>
+                    </div>
+                </section>
+
+                <section class="recent">
+                    <h3>Users</h3>
+                    <p class="empty" th:if="${#lists.isEmpty(users)}">No users yet.</p>
+
+                    <table class="admin_table" th:unless="${#lists.isEmpty(users)}">
+                        <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Company</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th class="col_actions">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="u : ${users}"
+                            th:with="isSelf=${#strings.equalsIgnoreCase(u.userEmail, currentEmail)},
+                                     active=${u.userActive != null and u.userActive}">
+                            <td>
+                                <span th:text="(${u.userName} ?: '') + ' ' + (${u.userSurname} ?: '')">Name</span>
+                                <span class="you_tag" th:if="${isSelf}">You</span>
+                            </td>
+                            <td th:text="${u.userEmail}">mail@mail.com</td>
+                            <td th:text="${#strings.isEmpty(u.companyName)} ? '—' : ${u.companyName}">—</td>
+                            <td>
+                                <form class="role_form" th:action="@{/admin/users/{id}/role(id=${u.userId})}" method="post">
+                                    <select name="role" class="role_select" th:disabled="${isSelf}" aria-label="Role">
+                                        <option th:each="r : ${roles}" th:value="${r}" th:text="${r}"
+                                                th:selected="${r == u.userRole}">ROLE</option>
+                                    </select>
+                                    <button type="submit" class="btn btn_ghost" th:disabled="${isSelf}">Save</button>
+                                </form>
+                            </td>
+                            <td>
+                                <span class="status" th:classappend="${active} ? 'status_active' : 'status_inactive'"
+                                      th:text="${active} ? 'Active' : 'Inactive'">Active</span>
+                            </td>
+                            <td class="col_actions">
+                                <form th:action="@{/admin/users/{id}/toggle-active(id=${u.userId})}" method="post">
+                                    <button type="submit" class="btn"
+                                            th:classappend="${active} ? 'btn_danger' : 'btn_success'"
+                                            th:disabled="${isSelf}"
+                                            th:text="${active} ? 'Deactivate' : 'Activate'">Deactivate</button>
+                                </form>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </section>
+            </main>
+
+            <footer class="home_footer"></footer>
+        </div>
+    </div>
+</body>
+</html>

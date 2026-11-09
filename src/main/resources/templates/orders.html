@@ -57,6 +57,10 @@
                 <svg viewBox="0 0 24 24"><path d="M6 2h12l2 4v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6l2-4zm0 4h12M9 10h6M9 14h6"/></svg>
                 <span>My Orders</span>
             </a>
+            <a class="menu_item" th:href="@{/reports}">
+                <svg viewBox="0 0 24 24"><path d="M3 3v18h18M7 15l4-4 3 3 6-6"/></svg>
+                <span>Reports</span>
+            </a>
             <a class="menu_item" th:href="@{/profile}">
                 <svg viewBox="0 0 24 24"><path d="M16 11a4 4 0 1 0-8 0M4 21a8 8 0 0 1 16 0M12 3a4 4 0 1 1 0 8 4 4 0 0 1 0-8z"/></svg>
                 <span>Account</span>
@@ -81,7 +85,7 @@
                         <span class="user_email" th:text="${userData.userEmail}">user@mail.com</span>
                         <span class="user_role" th:text="${userData.userRole}">ROLE</span>
                     </div>
-                    <a th:href="@{/orders}" th:text="${isOwner} ? 'All Orders' : 'My Orders'">My Orders</a>
+                    <a th:href="@{/orders}" th:text="${isOwner} ? 'Orders' : 'My Orders'">My Orders</a>
                     <a th:href="@{/profile}">Account Details</a>
                     <hr>
                     <form th:action="@{/logout}" method="post">
@@ -92,6 +96,9 @@
         </header>
 
         <main>
+            <div th:if="${param.ordered}" class="notice notice_success">Siparişiniz alındı, ürünler stoktan düşüldü.</div>
+            <div th:if="${param.cancelled}" class="notice notice_success">Sipariş iptal edildi, ürünler stoğa geri eklendi.</div>
+            <div th:if="${statusUpdated}" class="notice notice_success" th:text="${statusUpdated}">Durum güncellendi.</div>
             <div th:if="${cartError}" class="notice notice_error" th:text="${cartError}">Hata</div>
 
             <!-- ============ CUSTOMER: SEPETE EKLENEN ÜRÜNLER ============ -->
@@ -148,14 +155,159 @@
                         </tr>
                         </tfoot>
                     </table>
+
+                    <form class="checkout_form" th:action="@{/cart/checkout}" method="post">
+                        <button type="submit" class="btn_cart">Buy</button>
+                    </form>
                 </div>
             </section>
 
-            
+            <!-- ============ SİPARİŞLER (Owner: şirketinin siparişleri, Customer: satın aldıkları) ============ -->
+            <section class="panel">
+                <h2 class="panel_title" th:text="${isOwner} ? 'Orders' : 'Order History'">Orders</h2>
+
+                <!-- Owner: duruma göre filtre -->
+                <nav class="status_filter" th:if="${isOwner}" aria-label="Order status filter">
+                    <a th:href="@{/orders}" class="filter_chip"
+                       th:classappend="${selectedStatus == null} ? 'active'">All</a>
+                    <a th:each="s : ${statuses}" th:href="@{/orders(status=${s})}" class="filter_chip"
+                       th:classappend="${selectedStatus == s} ? 'active'" th:text="${s.label}">Pending</a>
+                </nav>
+
+                <p class="empty" th:if="${#lists.isEmpty(orders)}"
+                   th:text="${isOwner and selectedStatus != null} ? 'No orders with this status.' : 'No orders yet.'">No orders yet.</p>
+
+                <div class="table_wrap" th:unless="${#lists.isEmpty(orders)}">
+                    <table class="product_table">
+                        <thead th:if="${isOwner}">
+                            <tr>
+                                <th>Order #</th>
+                                <th>Date</th>
+                                <th th:if="${isOwner}">Customer</th>
+                                <th>Status</th>
+                                <th class="num">Total</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        <!-- v: OrderView (v.order, v.items, v.total). Owner sadece kendi şirketinin kalemlerini görür -->
+                        <th:block th:each="v : ${orders}" th:with="o=${v.order}">
+                        <tr>
+                            <td class="code" th:text="'#' + ${o.orderId}">#1</td>
+                            <td th:text="${o.orderDate != null} ? ${#temporals.format(o.orderDate, 'dd.MM.yyyy HH:mm')} : '-'">01.01.2026</td>
+                            <td th:if="${isOwner}"
+                                th:text="${o.customer.customerName} + ' ' + (${o.customer.customerSurname} ?: '')">Customer</td>
+                            <td th:if="${isOwner}"><span class="badge" th:classappend="${o.orderStatus?.cssClass}"
+                                      th:text="${o.orderStatus?.label} ?: '-'">Pending</span></td>
+                            <!-- Customer: owner onayladıysa "Preparing" görünür -->
+                            <td th:unless="${isOwner}"><span class="badge" th:classappend="${o.orderStatus?.customerCssClass}"
+                                      th:text="${o.orderStatus?.customerLabel} ?: '-'">Awaiting Approval</span></td>
+                            <td class="num"
+                                th:text="${#numbers.formatDecimal(v.total, 1, 'POINT', 2, 'COMMA')} + ' ₺'">0,00 ₺</td>
+                            <td class="num">
+                                <div class="order_actions">
+                                    <button type="button" class="detail_btn" aria-expanded="false"
+                                            th:attr="aria-controls='order-detail-' + ${o.orderId}"
+                                            onclick="toggleOrderDetail(this)">Details</button>
+
+                                    <!-- Owner: durumu ilerlet (Onayla → Hazırlanıyor → Kargoda → Teslim) -->
+                                    <form class="status_form"
+                                          th:if="${isOwner and o.orderStatus != null and !#lists.isEmpty(o.orderStatus.nextStatuses)}"
+                                          th:action="@{/orders/{id}/status(id=${o.orderId})}" method="post">
+                                        <select name="status" class="status_select" aria-label="New status">
+                                            <option th:each="s : ${o.orderStatus.nextStatuses}"
+                                                    th:value="${s}" th:text="${s.actionLabel}">Approve → Preparing</option>
+                                        </select>
+                                        <button type="submit" class="detail_btn">Update</button>
+                                    </form>
+
+                                    <!-- Customer: bekleyen siparişini iptal eder -->
+                                    <form th:if="${!isOwner and o.orderStatus != null and o.orderStatus.cancellable}"
+                                          th:action="@{/orders/{id}/cancel(id=${o.orderId})}" method="post"
+                                          onsubmit="return confirm('Bu siparişi iptal etmek istediğinize emin misiniz?');">
+                                        <button type="submit" class="remove_btn">Cancel Order</button>
+                                    </form>
+
+                                    <!-- Customer: kargodaki siparişi teslim aldım → Delivered -->
+                                    <form th:if="${!isOwner and o.orderStatus != null and o.orderStatus.receivable}"
+                                          th:action="@{/orders/{id}/received(id=${o.orderId})}" method="post"
+                                          onsubmit="return confirm('Siparişinizi teslim aldınız mı?');">
+                                        <button type="submit" class="btn_cart">Order Received</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        <!-- Customer: sipariş takip çubuğu (Order Placed → Preparing → Shipping → Delivered) -->
+                        <tr class="order_track_row" th:if="${!isOwner and o.orderStatus != null and o.orderStatus.trackable}">
+                            <td colspan="5">
+                                <ol class="order_track" th:with="step=${o.orderStatus.step}">
+                                    <li th:each="name, it : ${trackSteps}" class="track_step"
+                                        th:classappend="${it.index lt step} ? 'done' : (${it.index == step} ? 'current' : '')">
+                                        <span class="track_dot" th:text="${it.index lt step} ? '✓' : ${it.count}">1</span>
+                                        <span class="track_label" th:text="${name}">Order Placed</span>
+                                    </li>
+                                </ol>
+                            </td>
+                        </tr>
+                        <!-- Sipariş detayı: Details butonuyla açılır -->
+                        <tr class="order_detail" th:id="'order-detail-' + ${o.orderId}" hidden>
+                            <td th:colspan="${isOwner} ? 6 : 5">
+                                <div class="order_detail_box">
+                                    <div class="order_detail_meta" th:if="${isOwner}">
+                                        <span th:text="'Email: ' + (${o.customer.customerEmail} ?: '-')">Email</span>
+                                        <span th:text="'Phone: ' + (${o.customer.customerPhone} ?: '-')">Phone</span>
+                                    </div>
+
+                                    <p class="order_detail_note" th:if="${isOwner and #lists.size(v.items) lt #lists.size(o.items)}">
+                                        Bu siparişte başka şirketlerin ürünleri de var; sadece sizin ürünleriniz gösteriliyor.
+                                    </p>
+
+                                    <p class="empty" th:if="${#lists.isEmpty(v.items)}">Bu siparişte ürün yok.</p>
+
+                                    <table class="detail_table" th:unless="${#lists.isEmpty(v.items)}">
+                                        <thead>
+                                        <tr>
+                                            <th>Product</th>
+                                            <th>Company</th>
+                                            <th class="num">Unit Price</th>
+                                            <th class="num">Quantity</th>
+                                            <th class="num">Total</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr th:each="i : ${v.items}">
+                                            <td th:text="${i.product.productName}">Product</td>
+                                            <td th:text="${i.product.companyName} ?: '-'">Company</td>
+                                            <td class="num"
+                                                th:text="${i.orderitemUnitPrice != null} ? ${#numbers.formatDecimal(i.orderitemUnitPrice, 1, 'POINT', 2, 'COMMA')} + ' ₺' : '-'">0,00 ₺</td>
+                                            <td class="num" th:text="${i.orderitemQuantity}">1</td>
+                                            <td class="num"
+                                                th:text="${#numbers.formatDecimal(i.lineTotal, 1, 'POINT', 2, 'COMMA')} + ' ₺'">0,00 ₺</td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </td>
+                        </tr>
+                        </th:block>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
         </main>
 
         <footer class="home_footer"></footer>
     </div>
 </div>
+<script>
+    // Order History: sipariş detay satırını aç/kapat
+    function toggleOrderDetail(button) {
+        const row = document.getElementById(button.getAttribute('aria-controls'));
+        const open = row.hidden;
+        row.hidden = !open;
+        button.setAttribute('aria-expanded', String(open));
+        button.textContent = open ? 'Hide' : 'Details';
+    }
+</script>
 </body>
 </html>

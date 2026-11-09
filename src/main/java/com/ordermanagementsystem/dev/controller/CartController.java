@@ -64,6 +64,18 @@ public class CartController {
         return "redirect:/orders";
     }
 
+    // My Orders > Satın Al: sepeti siparişe çevirir ve stokları düşer
+    @PostMapping("/checkout")
+    public String checkout(Authentication auth, RedirectAttributes redirectAttributes) {
+        try {
+            cartService.checkout(auth.getName());
+            return "redirect:/orders?ordered";
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("cartError", e.getMessage());
+            return "redirect:/orders";
+        }
+    }
+
     private String changeQuantity(Long cartItemId, int delta,
             Authentication auth,
             RedirectAttributes redirectAttributes) {

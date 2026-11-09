@@ -1,5 +1,6 @@
 package com.ordermanagementsystem.dev.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,4 +17,8 @@ public interface UserRepository extends JpaRepository<UsersModel, Long> {
     boolean existsByUserName(String userName);
 
     boolean existsByUserEmail(String userEmail);
+
+    List<UsersModel> findAllByOrderByUserIdAsc();
+
+    long countByUserRoleAndUserActiveTrue(String userRole);
 }

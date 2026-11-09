@@ -36,4 +36,12 @@ public class OrderItemModel {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
     private ProductsModel product;
+
+    // Not stored in the database; unit price * quantity
+    public BigDecimal getLineTotal() {
+        if (orderitemUnitPrice == null || orderitemQuantity == null) {
+            return BigDecimal.ZERO;
+        }
+        return orderitemUnitPrice.multiply(BigDecimal.valueOf(orderitemQuantity));
+    }
 }

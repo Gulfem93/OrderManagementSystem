@@ -2,6 +2,8 @@ package com.ordermanagementsystem.dev.data;
 
 import java.math.BigDecimal;
 
+import com.ordermanagementsystem.enums.CategoryType;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -15,8 +17,9 @@ public class ProductsData {
     @NotBlank(message = "Product name cannot be blank!")
     private String productName;
 
-    @NotBlank(message = "Product category cannot be blank!")
-    private String productCategory;
+    // Seçim kutusundan gelen enum adı (ör. "LAPTOP") otomatik CategoryType'a çevrilir
+    @NotNull(message = "Please select a category!")
+    private CategoryType productCategory;
 
     @NotNull(message = "Price is required!")
     @PositiveOrZero(message = "Price cannot be negative!")

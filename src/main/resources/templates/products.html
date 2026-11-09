@@ -57,6 +57,10 @@
                 <svg viewBox="0 0 24 24"><path d="M6 2h12l2 4v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6l2-4zm0 4h12M9 10h6M9 14h6"/></svg>
                 <span>My Orders</span>
             </a>
+            <a class="menu_item" th:href="@{/reports}">
+                <svg viewBox="0 0 24 24"><path d="M3 3v18h18M7 15l4-4 3 3 6-6"/></svg>
+                <span>Reports</span>
+            </a>
             <a class="menu_item" th:href="@{/profile}">
                 <svg viewBox="0 0 24 24"><path d="M16 11a4 4 0 1 0-8 0M4 21a8 8 0 0 1 16 0M12 3a4 4 0 1 1 0 8 4 4 0 0 1 0-8z"/></svg>
                 <span>Account</span>
@@ -93,14 +97,17 @@
 
         <main>
             <div th:if="${param.added}" class="notice notice_success">Product added successfully.</div>
+            <div th:if="${param.updated}" class="notice notice_success">Product updated successfully.</div>
             <div th:if="${param.cartAdded}" class="notice notice_success">Ürün sepete eklendi.</div>
             <div th:if="${cartError}" class="notice notice_error" th:text="${cartError}">Hata</div>
 
-            <!-- ============ OWNER: ÜRÜN EKLEME FORMU ============ -->
-            <section class="panel" th:if="${isOwner}">
-                <h2 class="panel_title">Add Product</h2>
+            <!-- ============ OWNER: ÜRÜN EKLEME / DÜZENLEME FORMU ============ -->
+            <!-- editId varsa form düzenleme modundadır (Edit butonuyla açılır) -->
+            <section class="panel" th:if="${isOwner}" th:classappend="${editId != null} ? 'panel_editing'" id="product-form">
+                <h2 class="panel_title" th:text="${editId != null} ? 'Edit Product' : 'Add Product'">Add Product</h2>
 
-                <form th:action="@{/products}" th:object="${productData}" method="post" class="product_form" novalidate>
+                <form th:action="${editId != null} ? @{/products/{id}/edit(id=${editId})} : @{/products}"
+                      th:object="${productData}" method="post" class="product_form" novalidate>
                     <div class="field">
                         <label for="productCode">Product Code</label>
                         <input type="text" id="productCode" th:field="*{productCode}" placeholder="PRD-001" required />
@@ -115,7 +122,14 @@
 
                     <div class="field">
                         <label for="productCategory">Category</label>
-                        <input type="text" id="productCategory" th:field="*{productCategory}" placeholder="Electronics" required />
+                        <!-- CategoryType enum'undan: ana kategoriye göre gruplu, alt kategoriler girintili -->
+                        <select id="productCategory" th:field="*{productCategory}" required>
+                            <option value="">Select a category</option>
+                            <optgroup th:each="root : ${categoryRoots}" th:label="${root.displayName}">
+                                <option th:each="c : ${root.selfAndDescendants}"
+                                        th:value="${c}" th:text="${c.indentedName}">Laptop</option>
+                            </optgroup>
+                        </select>
                         <span class="field_error" th:if="${#fields.hasErrors('productCategory')}" th:errors="*{productCategory}"></span>
                     </div>
 
@@ -132,7 +146,9 @@
                     </div>
 
                     <div class="form_actions">
-                        <button type="submit" class="btn_primary">Add Product</button>
+                        <a th:if="${editId != null}" th:href="@{/products}" class="btn_secondary">Cancel</a>
+                        <button type="submit" class="btn_primary"
+                                th:text="${editId != null} ? 'Save Changes' : 'Add Product'">Add Product</button>
                     </div>
                 </form>
             </section>
@@ -151,15 +167,24 @@
                         <tr>
                             <th>Code</th>
                             <th>Name</th>
+                            <th>Category</th>
                             <th class="num">Price</th>
                             <th class="num">Stock</th>
+                            <th></th>
                         </tr>
                         </thead>
                         <tbody>
                         <tr th:each="p : ${products}"
-                            th:with="stock=${p.productStock ?: 0}">
+                            th:with="stock=${p.productStock ?: 0}"
+                            th:classappend="${editId == p.productId} ? 'row_editing'">
                             <td class="code" th:text="${p.productCode}">PRD-001</td>
                             <td th:text="${p.productName}">Product</td>
+                            <td>
+                                <span th:if="${p.productCategory != null}" class="category_tag"
+                                      th:title="${p.productCategory.path}" th:text="${p.productCategory.displayName}">Laptop</span>
+                                <span th:unless="${p.productCategory != null}" class="category_missing"
+                                      title="Kategori seçilmemiş, Edit ile seçebilirsiniz">Not set</span>
+                            </td>
                             <td class="num"
                                 th:text="${p.productPrice != null} ? ${#numbers.formatDecimal(p.productPrice, 1, 'POINT', 2, 'COMMA')} + ' ₺' : '-'">0,00 ₺</td>
                             <td class="num">
@@ -167,6 +192,14 @@
                                 <span class="stock"
                                       th:classappend="${stock <= lowStock} ? 'stock_low'"
                                       th:text="${stock}">0</span>
+                            </td>
+                            <td class="num">
+                                <!-- #product-form: sayfa forma kayar -->
+                                <a class="edit_btn" th:href="@{/products/{id}/edit(id=${p.productId})} + '#product-form'"
+                                   th:attr="aria-label='Edit ' + ${p.productName}">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
+                                    <span>Edit</span>
+                                </a>
                             </td>
                         </tr>
                         </tbody>

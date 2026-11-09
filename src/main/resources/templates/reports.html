@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/home.css}">
+    <link rel="stylesheet" th:href="@{/css/products.css}">
+</head>
+<body>
+<div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <a class="brand" th:href="@{/}">
+            <span class="brand_logo">OM</span>
+            <span class="brand_name">Order Management</span>
+        </a>
+
+        <!-- OWNER MENÜSÜ -->
+        <nav class="menu" th:if="${isOwner}">
+            <a class="menu_item" th:href="@{/}">
+                <svg viewBox="0 0 24 24"><path d="M3 3h7v9H3zM14 3h7v5h-7zM14 12h7v9h-7zM3 16h7v5H3z"/></svg>
+                <span>Dashboard</span>
+            </a>
+            <a class="menu_item" th:href="@{/orders}">
+                <svg viewBox="0 0 24 24"><path d="M6 2h12l2 4v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6l2-4zm0 4h12M9 10h6M9 14h6"/></svg>
+                <span>Orders</span>
+            </a>
+            <a class="menu_item" th:href="@{/products}">
+                <svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5 9 5 9-5zM3 8v8l9 5 9-5V8M12 13v8"/></svg>
+                <span>Products &amp; Stock</span>
+            </a>
+            <a class="menu_item" th:href="@{/customers}">
+                <svg viewBox="0 0 24 24"><path d="M16 11a4 4 0 1 0-8 0M4 21a8 8 0 0 1 16 0M12 3a4 4 0 1 1 0 8 4 4 0 0 1 0-8z"/></svg>
+                <span>Customers</span>
+            </a>
+            <a class="menu_item active" th:href="@{/reports}">
+                <svg viewBox="0 0 24 24"><path d="M3 3v18h18M7 15l4-4 3 3 6-6"/></svg>
+                <span>Reports</span>
+            </a>
+        </nav>
+
+        <!-- CUSTOMER MENÜSÜ -->
+        <nav class="menu" th:unless="${isOwner}">
+            <a class="menu_item" th:href="@{/}">
+                <svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg>
+                <span>Home</span>
+            </a>
+            <a class="menu_item" th:href="@{/products}">
+                <svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5 9 5 9-5zM3 8v8l9 5 9-5V8M12 13v8"/></svg>
+                <span>Shop</span>
+            </a>
+            <a class="menu_item" th:href="@{/orders}">
+                <svg viewBox="0 0 24 24"><path d="M6 2h12l2 4v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6l2-4zm0 4h12M9 10h6M9 14h6"/></svg>
+                <span>My Orders</span>
+            </a>
+            <a class="menu_item active" th:href="@{/reports}">
+                <svg viewBox="0 0 24 24"><path d="M3 3v18h18M7 15l4-4 3 3 6-6"/></svg>
+                <span>Reports</span>
+            </a>
+            <a class="menu_item" th:href="@{/profile}">
+                <svg viewBox="0 0 24 24"><path d="M16 11a4 4 0 1 0-8 0M4 21a8 8 0 0 1 16 0M12 3a4 4 0 1 1 0 8 4 4 0 0 1 0-8z"/></svg>
+                <span>Account</span>
+            </a>
+        </nav>
+    </aside>
+
+    <div class="content">
+        <header class="topbar">
+            <h1 class="page_title" th:text="${isOwner} ? 'Sales Report' : 'My Reports'">Reports</h1>
+
+            <div class="dropdown">
+                <button type="button" class="dropdown_btn" aria-haspopup="true">
+                    <span class="avatar"
+                          th:text="${#strings.isEmpty(userData.userName)} ? '?' : ${#strings.toUpperCase(#strings.substring(userData.userName, 0, 1))}">?</span>
+                    <span class="dropdown_label" th:text="${userData.userName}">User</span>
+                    <svg class="chevron" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+                </button>
+                <div class="dropdown_content">
+                    <div class="dropdown_header">
+                        <span class="user_name" th:text="${userData.userName} + ' ' + (${userData.userSurname} ?: '')">User</span>
+                        <span class="user_email" th:text="${userData.userEmail}">user@mail.com</span>
+                        <span class="user_role" th:text="${userData.userRole}">ROLE</span>
+                    </div>
+                    <a th:href="@{/orders}" th:text="${isOwner} ? 'Orders' : 'My Orders'">My Orders</a>
+                    <a th:href="@{/profile}">Account Details</a>
+                    <hr>
+                    <form th:action="@{/logout}" method="post">
+                        <button type="submit" class="logout_btn">Logout</button>
+                    </form>
+                </div>
+            </div>
+        </header>
+
+        <main th:with="r=${report}">
+            <!-- Özet kartları -->
+            <section class="customer_stats">
+                <div class="customer_stat">
+                    <span class="customer_stat_label" th:text="${isOwner} ? 'Total Sales' : 'Total Spent'">Total Spent</span>
+                    <span class="customer_stat_value"
+                          th:text="${#numbers.formatDecimal(r.totalAmount, 1, 'POINT', 2, 'COMMA')} + ' ₺'">0,00 ₺</span>
+                </div>
+                <div class="customer_stat">
+                    <span class="customer_stat_label">Orders</span>
+                    <span class="customer_stat_value" th:text="${r.orderCount}">0</span>
+                </div>
+                <div class="customer_stat">
+                    <span class="customer_stat_label">Average Order</span>
+                    <span class="customer_stat_value"
+                          th:text="${#numbers.formatDecimal(r.averageOrder, 1, 'POINT', 2, 'COMMA')} + ' ₺'">0,00 ₺</span>
+                </div>
+                <div class="customer_stat">
+                    <span class="customer_stat_label" th:text="${isOwner} ? 'Items Sold' : 'Items Bought'">Items Bought</span>
+                    <span class="customer_stat_value" th:text="${r.itemCount}">0</span>
+                </div>
+            </section>
+
+            <!-- Owner: satış sağlığı -->
+            <section class="customer_stats" th:if="${isOwner}">
+                <a class="customer_stat stat_link" th:href="@{/orders(status='PENDING')}"
+                   th:classappend="${insights.awaitingApproval > 0} ? 'stat_alert'">
+                    <span class="customer_stat_label">Awaiting Approval</span>
+                    <span class="customer_stat_value" th:text="${insights.awaitingApproval}">0</span>
+                    <span class="stat_hint">Onay bekleyen siparişler →</span>
+                </a>
+                <div class="customer_stat">
+                    <span class="customer_stat_label">Open Orders</span>
+                    <span class="customer_stat_value"
+                          th:text="${#numbers.formatDecimal(insights.openRevenue, 1, 'POINT', 2, 'COMMA')} + ' ₺'">0,00 ₺</span>
+                    <span class="stat_hint" th:text="${insights.openOrderCount} + ' sipariş hazırlanıyor / kargoda'">0</span>
+                </div>
+                <div class="customer_stat">
+                    <span class="customer_stat_label">Delivered Revenue</span>
+                    <span class="customer_stat_value"
+                          th:text="${#numbers.formatDecimal(insights.deliveredRevenue, 1, 'POINT', 2, 'COMMA')} + ' ₺'">0,00 ₺</span>
+                    <span class="stat_hint">Teslim edilmiş, kesinleşmiş satış</span>
+                </div>
+                <div class="customer_stat">
+                    <span class="customer_stat_label">Cancel / Return Rate</span>
+                    <span class="customer_stat_value"
+                          th:text="'%' + ${insights.cancelRate} + ' / %' + ${insights.returnRate}">%0 / %0</span>
+                    <span class="stat_hint">Tüm siparişlere oranla</span>
+                </div>
+            </section>
+
+            <!-- ============ OWNER: SİPARİŞ İSTATİSTİKLERİ ============ -->
+            <th:block th:if="${isOwner and r.orderCount > 0}" th:with="os=${orderStats}">
+                <h2 class="report_section_title">Order Statistics</h2>
+
+                <!-- Dönem karşılaştırması -->
+                <section class="customer_stats">
+                    <div class="customer_stat" th:each="p : ${os.periods}">
+                        <span class="customer_stat_label" th:text="${p.label}">Today</span>
+                        <span class="customer_stat_value" th:text="${p.orders} + ' orders'">0 orders</span>
+                        <span class="stat_hint">
+                            <span th:text="${#numbers.formatDecimal(p.revenue, 1, 'POINT', 2, 'COMMA')} + ' ₺'">0,00 ₺</span>
+                            <span class="trend" th:if="${p.change != null}"
+                                  th:classappend="${p.up} ? 'trend_up' : (${p.down} ? 'trend_down' : '')"
+                                  th:text="(${p.up} ? '▲ ' : (${p.down} ? '▼ ' : '')) + ${p.change} + '%'"
+                                  title="Önceki aynı uzunluktaki döneme göre">▲ 0%</span>
+                        </span>
+                    </div>
+                </section>
+
+                <div class="report_grid">
+                    <!-- Son 14 gün -->
+                    <section class="panel report_wide">
+                        <h2 class="panel_title">Daily Orders (last 14 days)</h2>
+                        <div class="month_chart">
+                            <div class="month_col" th:each="b : ${os.dailyBars}">
+                                <span class="month_value" th:text="${b.count == 0} ? '' : ${b.count}">0</span>
+                                <div class="month_track month_track_short">
+                                    <div class="month_bar" th:style="'height:' + ${b.percent} + '%'"
+                                         th:title="${b.label} + ': ' + ${b.count} + ' order(s)'"></div>
+                                </div>
+                                <span class="month_label" th:text="${b.label}">10.11</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Haftanın günleri -->
+                    <section class="panel">
+                        <h2 class="panel_title">Orders by Weekday</h2>
+                        <ul class="bar_list">
+                            <li th:each="b : ${os.weekdayBars}">
+                                <div class="bar_head">
+                                    <span class="bar_label" th:text="${b.label}">Mon</span>
+                                    <span class="bar_value" th:text="${b.count}">0</span>
+                                </div>
+                                <div class="bar_track"><div class="bar_fill" th:style="'width:' + ${b.percent} + '%'"></div></div>
+                            </li>
+                        </ul>
+                    </section>
+
+                    <!-- Diğer istatistikler -->
+                    <section class="panel">
+                        <h2 class="panel_title">Order Insights</h2>
+                        <dl class="fact_list">
+                            <div><dt>Busiest Day</dt><dd th:text="${os.busiestDay}">Monday</dd></div>
+                            <div><dt>Busiest Hour</dt><dd th:text="${os.busiestHour}">14:00 - 15:00</dd></div>
+                            <div><dt>Avg. Items per Order</dt><dd th:text="${os.avgItemsPerOrder}">0</dd></div>
+                            <div>
+                                <dt>Largest Order</dt>
+                                <dd>
+                                    <span th:text="${#numbers.formatDecimal(os.largestOrder, 1, 'POINT', 2, 'COMMA')} + ' ₺'">0,00 ₺</span>
+                                    <span class="code" th:if="${os.largestOrderId != null}" th:text="'#' + ${os.largestOrderId}">#1</span>
+                                </dd>
+                            </div>
+                            <div><dt>Repeat Customers</dt><dd th:text="'%' + ${os.repeatCustomerRate}">%0</dd></div>
+                            <div><dt>New Customers (this month)</dt><dd th:text="${os.newCustomersThisMonth}">0</dd></div>
+                        </dl>
+                    </section>
+                </div>
+            </th:block>
+
+            <p class="empty panel" th:if="${r.orderCount == 0}"
+               th:text="${isOwner} ? 'Henüz satış yok; rapor siparişler geldikçe dolacak.' : 'Henüz siparişiniz yok; alışveriş yaptıkça raporunuz burada görünecek.'">
+                Henüz sipariş yok.
+            </p>
+
+            <div class="report_grid" th:unless="${r.orderCount == 0}">
+                <!-- Aylık tutar -->
+                <section class="panel report_wide">
+                    <h2 class="panel_title" th:text="${isOwner} ? 'Monthly Sales (last 6 months)' : 'Monthly Spending (last 6 months)'">Monthly Spending</h2>
+                    <div class="month_chart">
+                        <div class="month_col" th:each="b : ${r.monthlyBars}">
+                            <span class="month_value"
+                                  th:text="${b.amount.signum() == 0} ? '-' : ${#numbers.formatDecimal(b.amount, 1, 'POINT', 0, 'COMMA')} + ' ₺'">0 ₺</span>
+                            <div class="month_track">
+                                <div class="month_bar" th:style="'height:' + ${b.percent} + '%'"
+                                     th:title="${b.count} + ' order(s)'"></div>
+                            </div>
+                            <span class="month_label" th:text="${b.label}">Nov 2026</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Duruma göre siparişler -->
+                <section class="panel">
+                    <h2 class="panel_title">Orders by Status</h2>
+                    <ul class="bar_list">
+                        <li th:each="b : ${r.statusBars}">
+                            <div class="bar_head">
+                                <span class="badge" th:classappend="${b.cssClass}" th:text="${b.label}">Delivered</span>
+                                <span class="bar_value" th:text="${b.count} + ' (' + ${b.percent} + '%)'">1 (100%)</span>
+                            </div>
+                            <div class="bar_track"><div class="bar_fill" th:style="'width:' + ${b.percent} + '%'"></div></div>
+                        </li>
+                    </ul>
+                </section>
+
+                <!-- Customer: şirketlere göre harcama / Owner: en çok alan müşteriler -->
+                <section class="panel">
+                    <h2 class="panel_title" th:text="${r.breakdownTitle}">Spending by Company</h2>
+                    <p class="empty" th:if="${#lists.isEmpty(r.breakdownBars)}">Veri yok.</p>
+                    <ul class="bar_list">
+                        <li th:each="b : ${r.breakdownBars}">
+                            <div class="bar_head">
+                                <span class="bar_label" th:text="${b.label}">Company</span>
+                                <span class="bar_value"
+                                      th:text="${#numbers.formatDecimal(b.amount, 1, 'POINT', 2, 'COMMA')} + ' ₺'">0,00 ₺</span>
+                            </div>
+                            <div class="bar_track"><div class="bar_fill" th:style="'width:' + ${b.percent} + '%'"></div></div>
+                        </li>
+                    </ul>
+                </section>
+
+                <!-- Owner: kategoriye göre satış -->
+                <section class="panel report_wide" th:if="${isOwner}">
+                    <h2 class="panel_title">Sales by Category</h2>
+                    <p class="empty" th:if="${#lists.isEmpty(insights.categoryBars)}">Veri yok.</p>
+                    <ul class="bar_list">
+                        <li th:each="b : ${insights.categoryBars}">
+                            <div class="bar_head">
+                                <span class="bar_label" th:text="${b.label}">Category</span>
+                                <span class="bar_value"
+                                      th:text="${#numbers.formatDecimal(b.amount, 1, 'POINT', 2, 'COMMA')} + ' ₺'">0,00 ₺</span>
+                            </div>
+                            <div class="bar_track"><div class="bar_fill" th:style="'width:' + ${b.percent} + '%'"></div></div>
+                        </li>
+                    </ul>
+                </section>
+
+                <!-- En çok alınan / satılan ürünler -->
+                <section class="panel report_wide">
+                    <h2 class="panel_title" th:text="${isOwner} ? 'Best-Selling Products' : 'Most Purchased Products'">Most Purchased Products</h2>
+                    <p class="empty" th:if="${#lists.isEmpty(r.topProducts)}">Veri yok.</p>
+                    <div class="table_wrap" th:unless="${#lists.isEmpty(r.topProducts)}">
+                        <table class="product_table">
+                            <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Product</th>
+                                <th th:unless="${isOwner}">Company</th>
+                                <th class="num">Quantity</th>
+                                <th class="num" th:text="${isOwner} ? 'Revenue' : 'Spent'">Spent</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="p, it : ${r.topProducts}">
+                                <td class="code" th:text="${it.count}">1</td>
+                                <td th:text="${p.name}">Product</td>
+                                <td th:unless="${isOwner}" th:text="${p.company}">Company</td>
+                                <td class="num" th:text="${p.quantity}">1</td>
+                                <td class="num"
+                                    th:text="${#numbers.formatDecimal(p.amount, 1, 'POINT', 2, 'COMMA')} + ' ₺'">0,00 ₺</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+
+            <!-- ============ OWNER: STOK RAPORU ============ -->
+            <th:block th:if="${isOwner}" th:with="s=${insights}">
+                <h2 class="report_section_title">Stock Report</h2>
+
+                <section class="customer_stats">
+                    <div class="customer_stat">
+                        <span class="customer_stat_label">Products</span>
+                        <span class="customer_stat_value" th:text="${s.productCount}">0</span>
+                    </div>
+                    <div class="customer_stat">
+                        <span class="customer_stat_label">Units in Stock</span>
+                        <span class="customer_stat_value" th:text="${s.totalUnits}">0</span>
+                    </div>
+                    <div class="customer_stat">
+                        <span class="customer_stat_label">Stock Value</span>
+                        <span class="customer_stat_value"
+                              th:text="${#numbers.formatDecimal(s.stockValue, 1, 'POINT', 2, 'COMMA')} + ' ₺'">0,00 ₺</span>
+                    </div>
+                    <div class="customer_stat" th:classappend="${s.outOfStockCount > 0} ? 'stat_alert'">
+                        <span class="customer_stat_label">Out of Stock</span>
+                        <span class="customer_stat_value" th:text="${s.outOfStockCount}">0</span>
+                    </div>
+                </section>
+
+                <p class="empty panel" th:if="${s.productCount == 0}">
+                    Henüz ürününüz yok. <a th:href="@{/products}">Products &amp; Stock</a> sayfasından ürün ekleyebilirsiniz.
+                </p>
+
+                <div class="report_grid" th:unless="${s.productCount == 0}">
+                    <!-- Düşük stok -->
+                    <section class="panel">
+                        <h2 class="panel_title" th:text="'Low Stock (≤ ' + ${s.lowStockThreshold} + ')'">Low Stock</h2>
+                        <p class="empty" th:if="${#lists.isEmpty(s.lowStockProducts)}">Tüm ürünlerin stoğu yeterli. 👍</p>
+                        <div class="table_wrap" th:unless="${#lists.isEmpty(s.lowStockProducts)}">
+                            <table class="product_table">
+                                <thead>
+                                <tr>
+                                    <th>Code</th>
+                                    <th>Product</th>
+                                    <th class="num">Stock</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="p : ${s.lowStockProducts}">
+                                    <td class="code" th:text="${p.productCode}">P-001</td>
+                                    <td th:text="${p.productName}">Product</td>
+                                    <td class="num">
+                                        <span class="stock stock_low"
+                                              th:text="${p.productStock == null or p.productStock == 0} ? 'Out' : ${p.productStock}">0</span>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+
+                    <!-- Hiç satılmamış ürünler -->
+                    <section class="panel">
+                        <h2 class="panel_title">Products With No Sales</h2>
+                        <p class="empty" th:if="${#lists.isEmpty(s.unsoldProducts)}">Tüm ürünleriniz en az bir kez satıldı. 🎉</p>
+                        <div class="table_wrap" th:unless="${#lists.isEmpty(s.unsoldProducts)}">
+                            <table class="product_table">
+                                <thead>
+                                <tr>
+                                    <th>Code</th>
+                                    <th>Product</th>
+                                    <th class="num">Stock</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="p : ${s.unsoldProducts}">
+                                    <td class="code" th:text="${p.productCode}">P-001</td>
+                                    <td th:text="${p.productName}">Product</td>
+                                    <td class="num"><span class="stock" th:text="${p.productStock} ?: 0">0</span></td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+            </th:block>
+
+            <p class="order_detail_note" th:unless="${r.orderCount == 0}"
+               th:text="${isOwner} ? 'Tutarlara iptal ve iade edilen siparişler dahil değildir; sadece sizin ürünleriniz hesaplanır.' : 'Tutarlara iptal ve iade edilen siparişler dahil değildir.'">
+                Tutarlara iptal ve iade edilen siparişler dahil değildir.
+            </p>
+        </main>
+
+        <footer class="home_footer"></footer>
+    </div>
+</div>
+</body>
+</html>
