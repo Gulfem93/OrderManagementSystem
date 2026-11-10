@@ -20,6 +20,7 @@ import org.springframework.util.StringUtils;
 
 import com.ordermanagementsystem.dev.model.UsersModel;
 import com.ordermanagementsystem.dev.repository.UserRepository;
+import com.ordermanagementsystem.enums.UserRole;
 
 /**
  * Uygulama hazır olduğunda:
@@ -35,9 +36,6 @@ import com.ordermanagementsystem.dev.repository.UserRepository;
 public class AdminRoleBootstrapInitializer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AdminRoleBootstrapInitializer.class);
-
-    private static final String ROLE_ADMIN = "ADMIN";
-    private static final String DEFAULT_ROLE = "CUSTOMER";
 
     private final UserRepository userRepository;
     private final String adminEmailsProperty;
@@ -58,8 +56,8 @@ public class AdminRoleBootstrapInitializer {
 
         boolean changed = false;
         for (UsersModel user : users) {
-            if (!StringUtils.hasText(user.getUserRole())) {
-                user.setUserRole(DEFAULT_ROLE);
+            if (user.getUserRole() == null) {
+                user.setUserRole(UserRole.CUSTOMER);
                 changed = true;
             }
         }
@@ -79,8 +77,8 @@ public class AdminRoleBootstrapInitializer {
                     LOGGER.warn("Admin bootstrap email is not found in persisted users: {}", adminEmail);
                     continue;
                 }
-                if (!ROLE_ADMIN.equals(user.getUserRole())) {
-                    user.setUserRole(ROLE_ADMIN);
+                if (user.getUserRole() != UserRole.ADMIN) {
+                    user.setUserRole(UserRole.ADMIN);
                     changed = true;
                 }
             }

@@ -10,7 +10,7 @@
     <link rel="stylesheet" th:href="@{/css/home.css}">
 </head>
 <body th:object="${userData}"
-      th:with="isOwner=${userData.userRole != null and #strings.toUpperCase(userData.userRole).endsWith('OWNER')}">
+      th:with="isOwner=${userData.owner}">
     <div class="layout">
         <!-- Sidebar -->
         <aside class="sidebar">

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ordermanagementsystem.dev.data.ProductsData;
+import com.ordermanagementsystem.dev.model.CompanyModel;
 import com.ordermanagementsystem.dev.model.ProductsModel;
 import com.ordermanagementsystem.dev.repository.ProductRepository;
 
@@ -29,8 +30,8 @@ public class ProductService {
     }
 
     // Owner: sadece kendi şirketinin ürünleri
-    public List<ProductsModel> findByCompany(String companyName) {
-        return productRepository.findByCompanyName(companyName, BY_NAME);
+    public List<ProductsModel> findByCompany(Long companyId) {
+        return productRepository.findByCompany_CompanyId(companyId, BY_NAME);
     }
 
     // Customer: şirket adına göre (alfabetik) gruplanmış ürünler
@@ -41,9 +42,12 @@ public class ProductService {
                 Collectors.toList()));
     }
 
-    public ProductsModel addProduct(ProductsData productsData, String companyName) {
+    public ProductsModel addProduct(ProductsData productsData, CompanyModel company) {
         String code = productsData.getProductCode().trim();
-        if (productRepository.existsByProductCodeAndCompanyName(code, companyName)) {
+        if (company == null) {
+            throw new IllegalArgumentException("Your account is not linked to a company.");
+        }
+        if (productRepository.existsByProductCodeAndCompany_CompanyId(code, company.getCompanyId())) {
             throw new IllegalArgumentException("A product with this code already exists.");
         }
 
@@ -53,14 +57,14 @@ public class ProductService {
         product.setProductPrice(productsData.getProductPrice());
         product.setProductStock(productsData.getProductStock());
         product.setProductCategory(productsData.getProductCategory());
-        product.setCompanyName(companyName);
+        product.setCompany(company);
 
         return productRepository.save(product);
     }
 
     // Owner > Edit: formu ürünün mevcut değerleriyle doldurur
-    public ProductsData getProductData(Long productId, String companyName) {
-        ProductsModel product = findOwnProduct(productId, companyName);
+    public ProductsData getProductData(Long productId, Long companyId) {
+        ProductsModel product = findOwnProduct(productId, companyId);
 
         ProductsData data = new ProductsData();
         data.setProductCode(product.getProductCode());
@@ -74,14 +78,14 @@ public class ProductService {
     // Owner > Edit: sadece kendi şirketinin ürününü günceller.
     // Satır kilitlenir; aynı anda gelen bir sipariş stoğu ezmez.
     @Transactional
-    public ProductsModel editProduct(Long productId, ProductsData productsData, String companyName) {
+    public ProductsModel editProduct(Long productId, ProductsData productsData, Long companyId) {
         ProductsModel product = productRepository.findByIdForUpdate(productId)
-                .filter(p -> companyName != null && companyName.equals(p.getCompanyName()))
+                .filter(p -> p.belongsTo(companyId))
                 .orElseThrow(() -> new IllegalArgumentException("Product not found."));
 
         // Kod değiştiyse şirketin başka bir ürünüyle çakışmamalı
         String code = productsData.getProductCode().trim();
-        productRepository.findByProductCodeAndCompanyName(code, companyName)
+        productRepository.findByProductCodeAndCompany_CompanyId(code, companyId)
                 .filter(other -> !other.getProductId().equals(productId))
                 .ifPresent(other -> {
                     throw new IllegalArgumentException("A product with this code already exists.");
@@ -95,9 +99,9 @@ public class ProductService {
         return product;
     }
 
-    private ProductsModel findOwnProduct(Long productId, String companyName) {
+    private ProductsModel findOwnProduct(Long productId, Long companyId) {
         return productRepository.findById(productId)
-                .filter(p -> companyName != null && companyName.equals(p.getCompanyName()))
+                .filter(p -> p.belongsTo(companyId))
                 .orElseThrow(() -> new IllegalArgumentException("Product not found."));
     }
 
@@ -105,7 +109,7 @@ public class ProductService {
         return productRepository.countByProductStockLessThanEqual(threshold);
     }
 
-    public long countLowStock(String companyName, long threshold) {
-        return productRepository.countByCompanyNameAndProductStockLessThanEqual(companyName, threshold);
+    public long countLowStock(Long companyId, long threshold) {
+        return productRepository.countByCompany_CompanyIdAndProductStockLessThanEqual(companyId, threshold);
     }
 }

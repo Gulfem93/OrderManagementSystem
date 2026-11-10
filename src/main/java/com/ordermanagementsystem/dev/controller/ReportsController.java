@@ -32,10 +32,10 @@ public class ReportsController {
         model.addAttribute("userData", userData);
         model.addAttribute("isOwner", owner);
         if (owner) {
-            String company = userData.getCompanyName();
-            model.addAttribute("report", reportService.ownerReport(company));
-            model.addAttribute("insights", reportService.ownerInsights(company, LOW_STOCK_THRESHOLD));
-            model.addAttribute("orderStats", reportService.orderStats(company));
+            Long companyId = userData.getCompanyId();
+            model.addAttribute("report", reportService.ownerReport(companyId));
+            model.addAttribute("insights", reportService.ownerInsights(companyId, LOW_STOCK_THRESHOLD));
+            model.addAttribute("orderStats", reportService.orderStats(companyId));
         } else {
             model.addAttribute("report", reportService.customerReport(auth.getName()));
         }

@@ -14,15 +14,13 @@ import java.time.LocalDateTime;
 public interface OrderRepository extends JpaRepository<OrdersModel, Long> {
     List<OrdersModel> findByOrderStatus(OrderStatus orderStatus);
 
-    List<OrdersModel> findByCustomer_CustomerId(Long customerId);
-
     Long countByOrderStatus(OrderStatus orderStatus);
 
-    List<OrdersModel> findTop5ByCustomer_CustomerEmailOrderByOrderDateDesc(String customerEmail);
+    List<OrdersModel> findTop5ByCustomer_UserEmailOrderByOrderDateDesc(String userEmail);
 
     // Order History için müşteri, kalemler ve ürünler tek sorguda gelir (detay satırı için)
     @EntityGraph(attributePaths = { "customer", "items", "items.product" })
-    List<OrdersModel> findByCustomer_CustomerEmailOrderByOrderDateDesc(String customerEmail);
+    List<OrdersModel> findByCustomer_UserEmailOrderByOrderDateDesc(String userEmail);
 
     @EntityGraph(attributePaths = { "customer", "items", "items.product" })
     List<OrdersModel> findAllByOrderByOrderDateDesc();
@@ -30,18 +28,18 @@ public interface OrderRepository extends JpaRepository<OrdersModel, Long> {
     // Owner: içinde şirketinin ürünü olan siparişler, en yeni üstte
     @EntityGraph(attributePaths = { "customer", "items", "items.product" })
     @Query("select distinct o from OrdersModel o join o.items i "
-            + "where i.product.companyName = :company order by o.orderDate desc")
-    List<OrdersModel> findByCompany(@Param("company") String company);
+            + "where i.product.company.companyId = :companyId order by o.orderDate desc")
+    List<OrdersModel> findByCompany(@Param("companyId") Long companyId);
 
-    @Query("select count(distinct o) from OrdersModel o join o.items i where i.product.companyName = :company")
-    long countByCompany(@Param("company") String company);
+    @Query("select count(distinct o) from OrdersModel o join o.items i where i.product.company.companyId = :companyId")
+    long countByCompany(@Param("companyId") Long companyId);
 
     @Query("select count(distinct o) from OrdersModel o join o.items i "
-            + "where i.product.companyName = :company and o.orderStatus = :status")
-    long countByCompanyAndStatus(@Param("company") String company, @Param("status") OrderStatus status);
+            + "where i.product.company.companyId = :companyId and o.orderStatus = :status")
+    long countByCompanyAndStatus(@Param("companyId") Long companyId, @Param("status") OrderStatus status);
 
-    @Query("select count(distinct o.customer) from OrdersModel o join o.items i where i.product.companyName = :company")
-    long countCustomersByCompany(@Param("company") String company);
+    @Query("select count(distinct o.customer) from OrdersModel o join o.items i where i.product.company.companyId = :companyId")
+    long countCustomersByCompany(@Param("companyId") Long companyId);
 
     List<OrdersModel> findByOrderDateBetween(LocalDateTime start, LocalDateTime end);
 }

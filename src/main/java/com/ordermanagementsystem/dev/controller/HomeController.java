@@ -40,12 +40,12 @@ public class HomeController {
 
         if (isOwner) {
             // Owner sadece kendi şirketinin rakamlarını görür
-            String company = userData.getCompanyName();
+            Long companyId = userData.getCompanyId();
             model.addAttribute("stats", new DashboardStats(
-                    orderService.countOrdersByCompany(company),
-                    orderService.countOrdersByCompanyAndStatus(company, OrderStatus.PENDING),
-                    productService.countLowStock(company, 5), // stok <= 5
-                    orderService.countCustomersByCompany(company)));
+                    orderService.countOrdersByCompany(companyId),
+                    orderService.countOrdersByCompanyAndStatus(companyId, OrderStatus.PENDING),
+                    productService.countLowStock(companyId, 5), // stok <= 5
+                    orderService.countCustomersByCompany(companyId)));
         } else {
             model.addAttribute("recentOrders", orderService.getRecentOrdersByCustomerEmail(auth.getName()));
         }

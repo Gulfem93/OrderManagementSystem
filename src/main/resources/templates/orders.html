@@ -196,7 +196,7 @@
                             <td class="code" th:text="'#' + ${o.orderId}">#1</td>
                             <td th:text="${o.orderDate != null} ? ${#temporals.format(o.orderDate, 'dd.MM.yyyy HH:mm')} : '-'">01.01.2026</td>
                             <td th:if="${isOwner}"
-                                th:text="${o.customer.customerName} + ' ' + (${o.customer.customerSurname} ?: '')">Customer</td>
+                                th:text="${o.customer.userName} + ' ' + (${o.customer.userSurname} ?: '')">Customer</td>
                             <td th:if="${isOwner}"><span class="badge" th:classappend="${o.orderStatus?.cssClass}"
                                       th:text="${o.orderStatus?.label} ?: '-'">Pending</span></td>
                             <!-- Customer: owner onayladıysa "Preparing" görünür -->
@@ -254,8 +254,8 @@
                             <td th:colspan="${isOwner} ? 6 : 5">
                                 <div class="order_detail_box">
                                     <div class="order_detail_meta" th:if="${isOwner}">
-                                        <span th:text="'Email: ' + (${o.customer.customerEmail} ?: '-')">Email</span>
-                                        <span th:text="'Phone: ' + (${o.customer.customerPhone} ?: '-')">Phone</span>
+                                        <span th:text="'Email: ' + (${o.customer.userEmail} ?: '-')">Email</span>
+                                        <span th:text="'Phone: ' + (${o.customer.userPhone} ?: '-')">Phone</span>
                                     </div>
 
                                     <p class="order_detail_note" th:if="${isOwner and #lists.size(v.items) lt #lists.size(o.items)}">

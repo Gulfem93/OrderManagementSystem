@@ -29,7 +29,7 @@ public class CustomersController {
     @GetMapping("/customers")
     public String getCustomersPage(Authentication auth, Model model) {
         UsersData userData = userService.getUserData(auth.getName());
-        List<CustomerSummary> customers = customerService.getCustomersForCompany(userData.getCompanyName());
+        List<CustomerSummary> customers = customerService.getCustomersForCompany(userData.getCompanyId());
 
         model.addAttribute("userData", userData);
         model.addAttribute("isOwner", true);

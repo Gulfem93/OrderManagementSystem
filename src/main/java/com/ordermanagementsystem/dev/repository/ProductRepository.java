@@ -16,13 +16,13 @@ import jakarta.persistence.LockModeType;
 public interface ProductRepository extends JpaRepository<ProductsModel, Long> {
     long countByProductStockLessThanEqual(Long productStock);
 
-    long countByCompanyNameAndProductStockLessThanEqual(String companyName, Long productStock);
+    long countByCompany_CompanyIdAndProductStockLessThanEqual(Long companyId, Long productStock);
 
-    boolean existsByProductCodeAndCompanyName(String productCode, String companyName);
+    boolean existsByProductCodeAndCompany_CompanyId(String productCode, Long companyId);
 
-    Optional<ProductsModel> findByProductCodeAndCompanyName(String productCode, String companyName);
+    Optional<ProductsModel> findByProductCodeAndCompany_CompanyId(String productCode, Long companyId);
 
-    List<ProductsModel> findByCompanyName(String companyName, Sort sort);
+    List<ProductsModel> findByCompany_CompanyId(Long companyId, Sort sort);
 
     // Satın alma sırasında satırı kilitler; aynı anda iki sipariş stoğu eksiye
     // düşüremez

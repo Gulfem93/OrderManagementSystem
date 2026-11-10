@@ -39,9 +39,7 @@ public class DataInitializer implements CommandLineRunner {
         adminGulfem.setUserName("Gülfem");
         adminGulfem.setUserSurname("Admin");
         adminGulfem.setUserPassword(passwordEncoder.encode("admin123*"));
-        // Giriş ve yetkilendirme userRole alanını kullanır (CustomUserDetailsService)
-        adminGulfem.setUserRole("ADMIN");
-        adminGulfem.setRole(UserRole.ADMIN);
+        adminGulfem.setUserRole(UserRole.ADMIN);
         adminGulfem.setUserActive(true);
         userRepository.save(adminGulfem);
     }

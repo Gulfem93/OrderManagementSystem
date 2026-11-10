@@ -221,7 +221,24 @@ src/main/resources
 └── application-dev.example.yml → Yerel ayar şablonu
 ```
 
-**Veritabanı tabloları:** `users`, `customers`, `products`, `orders`, `orderitem`, `cart_item`
+### Veri modeli
+
+```
+companies ──< users (owner)            users ──< orders ──< orderitem >── products >── companies
+                                       users ──< cart_item >── products
+```
+
+| Tablo | Açıklama |
+|---|---|
+| `users` | Tüm kullanıcılar. Tek rol alanı `user_role` (`CUSTOMER` / `OWNER` / `ADMIN`); owner'larda `company_id` dolu |
+| `companies` | Şirketler; owner'lar ve ürünler `company_id` ile bağlanır (ad benzersiz) |
+| `products` | Ürünler; `company_id` ile şirketine, `product_category` ile `CategoryType` enum'una bağlı |
+| `orders` | Siparişler; `user_id` ile siparişi veren kullanıcıya bağlı |
+| `orderitem` | Sipariş kalemleri (adet ve o anki birim fiyat) |
+| `cart_item` | Sepetteki ürünler |
+
+> Eski veritabanları (ayrı `customers` tablosu, metin şirket adı, iki rol alanı) uygulama açılışında
+> `LegacySchemaMigration` ile otomatik olarak yeni modele taşınır.
 
 ### Sayfalar
 

@@ -40,9 +40,11 @@ public class OrdersModel {
     @Column(length = 20)
     private OrderStatus orderStatus;
 
+    // Siparişi veren kullanıcı (artık ayrı bir customers tablosu yok).
+    // Sütun eski kayıtlar taşınabilsin diye veritabanında nullable; uygulama her siparişte doldurur.
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id", nullable = false)
-    private CustomerModel customer;
+    @JoinColumn(name = "user_id")
+    private UsersModel customer;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItemModel> items = new ArrayList<>();

@@ -58,17 +58,17 @@ public class ReportService {
 
     // Owner: şirketinin satışları (sadece kendi kalemleri), en çok alan müşteriler
     @Transactional(readOnly = true)
-    public ReportData ownerReport(String company) {
-        List<OrderView> views = orderService.getOrderViewsForCompany(company, null);
+    public ReportData ownerReport(Long companyId) {
+        List<OrderView> views = orderService.getOrderViewsForCompany(companyId, null);
         return build(views, true, "Top Customers",
                 v -> List.of(new Share(customerNameOf(v.order()), v.total())));
     }
 
     // Owner: satış sağlığı (onay bekleyen, iptal/iade oranı, kategoriler) + stok raporu
     @Transactional(readOnly = true)
-    public OwnerInsights ownerInsights(String company, long lowStockThreshold) {
-        List<OrderView> views = orderService.getOrderViewsForCompany(company, null);
-        List<ProductsModel> products = productService.findByCompany(company);
+    public OwnerInsights ownerInsights(Long companyId, long lowStockThreshold) {
+        List<OrderView> views = orderService.getOrderViewsForCompany(companyId, null);
+        List<ProductsModel> products = productService.findByCompany(companyId);
 
         long awaiting = views.stream().filter(v -> v.order().getOrderStatus() == OrderStatus.PENDING).count();
         List<OrderView> open = views.stream().filter(v -> isOpen(v.order().getOrderStatus())).toList();
@@ -116,8 +116,8 @@ public class ReportService {
 
     // Owner: sipariş istatistikleri (dönem karşılaştırması, günlük grafik, yoğun gün/saat...)
     @Transactional(readOnly = true)
-    public OrderStats orderStats(String company) {
-        List<OrderView> views = orderService.getOrderViewsForCompany(company, null).stream()
+    public OrderStats orderStats(Long companyId) {
+        List<OrderView> views = orderService.getOrderViewsForCompany(companyId, null).stream()
                 .filter(v -> v.order().getOrderDate() != null)
                 .toList();
         LocalDate today = LocalDate.now();
@@ -169,7 +169,7 @@ public class ReportService {
         // Tekrar eden müşteriler ve bu ay ilk siparişini veren müşteriler
         Map<Long, List<OrderView>> byCustomer = new HashMap<>();
         views.stream().filter(v -> v.order().getCustomer() != null)
-                .forEach(v -> byCustomer.computeIfAbsent(v.order().getCustomer().getCustomerId(),
+                .forEach(v -> byCustomer.computeIfAbsent(v.order().getCustomer().getUserId(),
                         k -> new ArrayList<>()).add(v));
         long repeat = byCustomer.values().stream().filter(l -> l.size() > 1).count();
         YearMonth thisMonth = YearMonth.now();
@@ -346,8 +346,8 @@ public class ReportService {
         if (order.getCustomer() == null) {
             return "-";
         }
-        String surname = order.getCustomer().getCustomerSurname();
-        return (order.getCustomer().getCustomerName() + " " + (surname == null ? "" : surname)).trim();
+        String surname = order.getCustomer().getUserSurname();
+        return (order.getCustomer().getUserName() + " " + (surname == null ? "" : surname)).trim();
     }
 
     private static int percent(long part, long whole) {
