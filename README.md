@@ -10,6 +10,13 @@ Sistemde üç tür kullanıcı vardır:
 
 Her kullanıcı giriş yaptığında rolüne özel bir ana sayfa ve menü görür.
 
+<!-- Ekran görüntüleri: docs/ klasörüne ekleyip aşağıdaki satırları açın -->
+<!--
+| Owner paneli | Sipariş takibi | Raporlar |
+|---|---|---|
+| ![Owner paneli](docs/owner-dashboard.png) | ![Sipariş takibi](docs/order-tracking.png) | ![Raporlar](docs/reports.png) |
+-->
+
 ---
 
 ## 🚀 Nasıl Çalışır?
@@ -42,11 +49,13 @@ Kayıt ol (Owner / Customer)  →  Giriş yap  →  Rolüne özel ana sayfa
 ```
 
 - Satın alındığında ürünler **stoktan düşülür**; sipariş **iptal** veya **iade** edilirse stok **geri eklenir**.
-- Aynı anda gelen siparişler stoğu eksiye düşüremez (satır kilitleme).
+- Satın alma tek bir transaction içinde çalışır: sepetteki herhangi bir üründe stok yetmezse sipariş oluşturulmaz ve hiçbir stok değişmez.
+- Aynı anda gelen siparişler stoğu eksiye düşüremez (satır kilitleme / pessimistic lock).
 - Customer sadece **onay bekleyen** siparişini iptal edebilir; owner kargoya verilene kadar iptal edebilir.
 - Customer, My Orders sayfasında her siparişin altında **takip çubuğu** görür:
   `Order Placed → Preparing → Shipping → Delivered`.
-- Bir siparişte birden fazla şirketin ürünü olabilir; her owner yalnızca **kendi ürünlerini ve tutarını** görür.
+- Bir siparişte birden fazla şirketin ürünü olabilir; her owner sipariş listesinde yalnızca **kendi ürünlerini ve tutarını** görür (bkz. [Bilinen Kısıtlar](#️-bilinen-kısıtlar)).
+- Durum geçiş kuralları tek bir yerde, `OrderStatus` enum'unda tanımlıdır.
 
 ---
 
@@ -98,17 +107,20 @@ Kayıt ol (Owner / Customer)  →  Giriş yap  →  Rolüne özel ana sayfa
 - Spring Security ile form tabanlı giriş, CSRF koruması
 - Şifreler BCrypt ile hash'lenerek saklanır
 - Sayfa ve işlem bazında rol kontrolü (ör. ürün ekleme/düzenleme ve sipariş durumu yalnızca Owner'a, `/admin` yalnızca Admin'e açık)
-- Owner yalnızca kendi şirketinin ürünlerini ve siparişlerini görebilir ve değiştirebilir; customer yalnızca kendi siparişlerine işlem yapabilir
+- Kayıt formundan yalnızca Owner veya Customer rolü seçilebilir; Admin rolü sadece admin panelinden verilir
+- Owner yalnızca kendi şirketinin ürünlerini ve siparişlerini görebilir ve değiştirebilir; customer yalnızca kendi sepetine ve siparişlerine işlem yapabilir
+- Pasif yapılan hesaplar giriş yapamaz
+- Veritabanı şifresi ve admin bilgileri kodda değil, yerel ayar dosyasında veya ortam değişkenlerinde tutulur
 
 ---
 
 ## 🛠️ Teknolojiler
 
-- **Java 17**, **Spring Boot 4**
+- **Java 17**, **Spring Boot 4.1**
 - **Spring Web MVC** + **Thymeleaf**: sunucu tarafında oluşturulan sayfalar
-- **Spring Security**: kimlik doğrulama ve yetkilendirme
-- **Spring Data JPA / Hibernate**: veritabanı erişimi
-- **MySQL**: veritabanı
+- **Spring Security**: form tabanlı giriş, rol bazlı yetkilendirme, BCrypt
+- **Spring Data JPA / Hibernate**: veritabanı erişimi, satır kilitleme (pessimistic lock)
+- **MySQL 8**: veritabanı
 - **Bean Validation**, **Lombok**, **Maven**
 
 ---
@@ -146,6 +158,13 @@ spring:
     url: jdbc:mysql://localhost:3306/ordermanagementsystem
     username: <kullanici_adi>
     password: <sifre>
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+app:
+  seed:
+    enabled: false
 ```
 
 **4. Uygulamayı çalıştırın**
@@ -158,9 +177,17 @@ Tarayıcıda **http://localhost:8080** adresine gidin, bir hesap oluşturun ve g
 
 ### 👤 Admin hesabı
 
-`app.seed.enabled: true` iken uygulama açılışta `gulfem@admin.com` e-postasıyla bir admin hesabı oluşturur (hesap zaten varsa dokunmaz). Varsayılan şifre `config/DataInitializer.java` içindedir; **ilk girişten sonra mutlaka değiştirin**, canlı ortamda `app.seed.enabled` değerini `false` yapın.
+İki yol vardır:
 
-Mevcut bir kullanıcıyı admin yapmak için e-postasını ortam değişkeniyle verebilirsiniz:
+**a) Açılışta admin hesabı oluşturma.** `app.seed.enabled: true` iken uygulama açılışta bir admin hesabı oluşturur (hesap zaten varsa dokunmaz). E-posta ve şifre ortam değişkenlerinden okunur:
+
+```bash
+ADMIN_SEED_EMAIL=admin@ornek.com ADMIN_SEED_PASSWORD=guclu-bir-sifre mvn spring-boot:run
+```
+
+Canlı ortamda `app.seed.enabled` değerini `false` yapın.
+
+**b) Mevcut bir kullanıcıyı admin yapma.** Kayıtlı bir kullanıcının e-postasını ortam değişkeniyle verin (birden fazla adres virgülle ayrılır):
 
 ```bash
 ADMIN_EMAILS=ornek@mail.com mvn spring-boot:run
@@ -189,7 +216,9 @@ src/main/java/com/ordermanagementsystem
 
 src/main/resources
 ├── templates/        → HTML sayfaları (Thymeleaf)
-└── static/css/       → Stil dosyaları
+├── static/css/       → Stil dosyaları
+├── application.yml
+└── application-dev.example.yml → Yerel ayar şablonu
 ```
 
 **Veritabanı tabloları:** `users`, `customers`, `products`, `orders`, `orderitem`, `cart_item`
@@ -208,6 +237,14 @@ src/main/resources
 
 ---
 
+## ⚠️ Bilinen Kısıtlar
+
+- Bir siparişte birden fazla şirketin ürünü olabilir, ancak siparişin durumu tektir: bir owner durumu değiştirdiğinde veya siparişi iptal ettiğinde siparişin tamamı etkilenir. Şirket başına ayrı durum takibi yol haritasındadır.
+- Şirketler ayrı bir tablo değil, owner kaydındaki şirket adıyla eşleştirilir; aynı adla iki şirket açılmamalıdır.
+- Otomatik testler henüz kapsamlı değildir.
+
+---
+
 ## 🧭 Yol Haritası
 
 - [x] Sepetteki ürünlerden sipariş oluşturma, stoktan düşme
@@ -216,7 +253,9 @@ src/main/resources
 - [x] Müşteriler sayfası (`/customers`)
 - [x] Raporlar sayfası (`/reports`)
 - [x] Ürün düzenleme ve kategori seçimi
+- [ ] Çok şirketli siparişlerde şirket başına ayrı durum takibi
+- [ ] Servis katmanı için birim testleri (sepet, sipariş, stok)
+- [ ] Şirketleri ayrı bir tabloya taşıma
 - [ ] Ürün silme
 - [ ] Profil / hesap bilgileri sayfası (`/profile`)
 - [ ] Ürün arama ve kategoriye göre filtreleme
-- [ ] Çok şirketli siparişlerde şirket başına ayrı durum takibi
