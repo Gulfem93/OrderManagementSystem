@@ -1,19 +1,14 @@
 # 📦 Order Management System
 
-![Java](https://img.shields.io/badge/Java-17-orange)
-![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1-brightgreen)
-![MySQL](https://img.shields.io/badge/MySQL-8-blue)
-![Thymeleaf](https://img.shields.io/badge/Thymeleaf-server--side-darkgreen)
+Küçük işletmelerin ürünlerini, stoklarını ve siparişlerini tek bir yerden yönetebilmesi; müşterilerin de farklı şirketlerden alışveriş yapıp siparişlerini adım adım takip edebilmesi için geliştirilmiş bir web uygulaması.
 
-Küçük işletmelerin ürünlerini, stoklarını ve siparişlerini tek bir yerden yönetebildiği; müşterilerin ise farklı şirketlerden alışveriş yapıp siparişlerini adım adım takip edebildiği bir web uygulaması.
+Sistemde üç tür kullanıcı vardır:
 
-Sistemde üç rol vardır. Her kullanıcı giriş yaptığında rolüne özel bir ana sayfa ve menü görür.
+- **İşletme sahibi (Owner):** Şirketinin ürünlerini ekler ve düzenler, stoklarını takip eder, gelen siparişleri onaylayıp kargoya kadar ilerletir, müşterilerini ve satış raporlarını görür.
+- **Müşteri (Customer):** Farklı şirketlerin ürünlerini inceler, sepetine ekler, satın alır ve siparişini *Onay bekliyor → Hazırlanıyor → Kargoda → Teslim edildi* adımlarıyla takip eder.
+- **Yönetici (Admin):** Kullanıcıların rollerini değiştirir, hesapları aktif/pasif yapar.
 
-| Rol | Ne yapar? |
-|---|---|
-| **Owner** (işletme sahibi) | Şirketinin ürünlerini ekler ve düzenler, stoğu takip eder, siparişleri onaylayıp kargoya kadar ilerletir, müşterilerini ve raporlarını görür. |
-| **Customer** (müşteri) | Farklı şirketlerin ürünlerini inceler, sepete ekler, satın alır ve siparişini takip eder. |
-| **Admin** (yönetici) | Kullanıcıların rollerini değiştirir, hesapları aktif veya pasif yapar. |
+Her kullanıcı giriş yaptığında rolüne özel bir ana sayfa ve menü görür.
 
 <!-- Ekran görüntüleri: docs/ klasörüne ekleyip aşağıdaki satırları açın -->
 <!--
@@ -22,51 +17,45 @@ Sistemde üç rol vardır. Her kullanıcı giriş yaptığında rolüne özel bi
 | ![Owner paneli](docs/owner-dashboard.png) | ![Sipariş takibi](docs/order-tracking.png) | ![Raporlar](docs/reports.png) |
 -->
 
-## İçindekiler
-
-- [Öne Çıkan Teknik Noktalar](#-öne-çıkan-teknik-noktalar)
-- [Sipariş Akışı](#-sipariş-akışı)
-- [Özellikler](#-özellikler)
-- [Teknolojiler](#️-teknolojiler)
-- [Kurulum](#️-kurulum)
-- [Proje Yapısı](#️-proje-yapısı)
-- [Bilinen Kısıtlar](#️-bilinen-kısıtlar)
-- [Yol Haritası](#-yol-haritası)
-
 ---
 
-## 💡 Öne Çıkan Teknik Noktalar
-
-- **Tutarlı satın alma:** Sepetten sipariş oluşturma tek bir transaction içinde çalışır. Sepetteki herhangi bir üründe stok yetmezse sipariş oluşturulmaz ve hiçbir stok değişmez.
-- **Eşzamanlılık güvenliği:** Stok güncellenirken ürün satırı kilitlenir (pessimistic lock). Aynı anda gelen siparişler stoğu eksiye düşüremez.
-- **Durum makinesi tek yerde:** Hangi durumdan hangisine geçilebileceği, hangi durumda iptal yapılabileceği ve stoğun ne zaman geri ekleneceği `OrderStatus` enum'unda tanımlıdır.
-- **Veri izolasyonu:** Owner yalnızca kendi şirketinin ürünlerini ve sipariş kalemlerini görür. Customer yalnızca kendi sepetinde ve siparişlerinde işlem yapabilir. Başkasına ait bir kayda erişim denemesi "bulunamadı" olarak döner.
-- **Sunucu tarafı raporlama:** Owner için satış, sipariş ve stok raporları; customer için harcama raporu.
-
----
-
-## 🔄 Sipariş Akışı
+## 🚀 Nasıl Çalışır?
 
 ```
- Customer satın alır      Owner onaylar        Owner kargoya verir     Customer "Teslim aldım" der
-        │                      │                       │                        │
-        ▼                      ▼                       ▼                        ▼
-   ┌─────────┐           ┌───────────┐           ┌──────────┐            ┌───────────┐
-   │ PENDING │ ────────▶ │ PREPARING │ ────────▶ │ SHIPPED  │ ─────────▶ │ DELIVERED │
-   └─────────┘           └───────────┘           └──────────┘            └───────────┘
-        │                      │                                                │
-        ▼                      ▼                                                ▼
-   CANCELLED  ◀────────────────┘                                          RETURNED (iade)
+Kayıt ol (Owner / Customer)  →  Giriş yap  →  Rolüne özel ana sayfa
+                                                 │
+            ┌────────────────────────────────────┼─────────────────────────────┐
+          Owner                               Customer                        Admin
+ • Özet panel                         • Ürünleri şirketlere göre gör   • Kullanıcı listesi
+ • Ürün ekle / düzenle                • Sepete ekle, adet değiştir     • Rol değiştir
+ • Siparişleri onayla, ilerlet        • Satın al                       • Hesabı aktif/pasif yap
+ • Müşteriler                         • Sipariş takibi, iptal,
+ • Satış, sipariş ve stok raporları     teslim aldım
+                                      • Harcama raporları
 ```
 
-| Kural | Açıklama |
-|---|---|
-| Stok | Satın alındığında ürünler stoktan düşülür; sipariş **iptal** veya **iade** edilirse stok geri eklenir. |
-| Customer iptali | Yalnızca *onay bekleyen* (`PENDING`) siparişler iptal edilebilir. |
-| Owner iptali | Sipariş kargoya verilene kadar (`PENDING`, `PREPARING`) iptal edilebilir. |
-| Teslim | Kargodaki siparişi customer "Teslim aldım" diyerek veya owner "Teslim edildi" olarak işaretleyerek kapatır. |
-| İade | Yalnızca teslim edilmiş siparişler iade olarak işaretlenebilir. |
-| Takip | Customer, *My Orders* sayfasında her siparişin altında bir takip çubuğu görür: `Order Placed → Preparing → Shipping → Delivered`. |
+### Sipariş akışı
+
+```
+ Customer satın alır          Owner onaylar           Owner kargoya verir       Customer "teslim aldım" der
+        │                          │                          │                          │
+        ▼                          ▼                          ▼                          ▼
+   ┌─────────┐               ┌───────────┐              ┌──────────┐              ┌───────────┐
+   │ PENDING │ ────────────▶ │ PREPARING │ ───────────▶ │ SHIPPED  │ ───────────▶ │ DELIVERED │
+   └─────────┘               └───────────┘              └──────────┘              └───────────┘
+        │                          │                                                     │
+        ▼                          ▼                                                     ▼
+   CANCELLED  (customer veya owner iptal eder)                                RETURNED (iade)
+```
+
+- Satın alındığında ürünler **stoktan düşülür**; sipariş **iptal** veya **iade** edilirse stok **geri eklenir**.
+- Satın alma tek bir transaction içinde çalışır: sepetteki herhangi bir üründe stok yetmezse sipariş oluşturulmaz ve hiçbir stok değişmez.
+- Aynı anda gelen siparişler stoğu eksiye düşüremez (satır kilitleme / pessimistic lock).
+- Customer sadece **onay bekleyen** siparişini iptal edebilir; owner kargoya verilene kadar iptal edebilir.
+- Customer, My Orders sayfasında her siparişin altında **takip çubuğu** görür:
+  `Order Placed → Preparing → Shipping → Delivered`.
+- Bir siparişte birden fazla şirketin ürünü olabilir; her owner sipariş listesinde yalnızca **kendi ürünlerini ve tutarını** görür (bkz. [Bilinen Kısıtlar](#️-bilinen-kısıtlar)).
+- Durum geçiş kuralları tek bir yerde, `OrderStatus` enum'unda tanımlıdır.
 
 ---
 
@@ -76,75 +65,63 @@ Sistemde üç rol vardır. Her kullanıcı giriş yaptığında rolüne özel bi
 |---|:---:|:---:|:---:|
 | Kayıt / giriş / çıkış | ✅ | ✅ | ✅ |
 | Rolüne özel ana sayfa | ✅ | ✅ | ✅ |
-| Özet istatistik paneli | ✅ | — | — |
-| Ürün ekleme ve düzenleme (hiyerarşik kategori) | ✅ | — | — |
+| Özet istatistik paneli (şirkete özel) | ✅ | — | — |
+| Ürün ekleme ve düzenleme | ✅ | — | — |
+| Kategori seçimi (hiyerarşik, enum) | ✅ | — | — |
 | Düşük stok uyarısı | ✅ | — | — |
-| Ürün listeleme | Kendi şirketi | Tüm şirketler (şirkete göre gruplu) | — |
+| Ürünleri listeleme | Kendi şirketi | Tüm şirketler (gruplu) | — |
 | Sepet (ekle, artır, azalt, çıkar, satın al) | — | ✅ | — |
-| Sipariş listesi | Durum filtresiyle | Kendi siparişleri | — |
-| Sipariş durumu güncelleme | ✅ | Teslim aldım | — |
+| Siparişler | Şirketinin siparişleri, durum filtresi | Kendi siparişleri | — |
+| Sipariş durumunu güncelleme | ✅ | Teslim aldım | — |
 | Sipariş iptali (stok geri eklenir) | ✅ | Onay beklerken | — |
+| Sipariş detayı | ✅ | ✅ | — |
 | Sipariş takip çubuğu | — | ✅ | — |
 | Müşteriler sayfası | ✅ | — | — |
 | Raporlar | Satış, sipariş, stok | Harcama | — |
-| Kullanıcı rolü ve aktiflik yönetimi | — | — | ✅ |
+| Kullanıcı rol / aktiflik yönetimi | — | — | ✅ |
 
 ### 📊 Raporlar (`/reports`)
 
-<details>
-<summary><b>Owner: Satış raporu</b></summary>
-
+**Owner — Satış raporu**
 - Toplam satış, sipariş sayısı, ortalama sipariş tutarı, satılan ürün adedi
 - Onay bekleyen siparişler, açık sipariş tutarı, teslim edilmiş satış, iptal/iade oranı
 - Son 6 ayın satış grafiği, duruma ve kategoriye göre dağılım
 - En çok satan ürünler, en çok alışveriş yapan müşteriler
-</details>
 
-<details>
-<summary><b>Owner: Sipariş istatistikleri</b></summary>
-
-- Bugün, son 7 gün ve son 30 gün (önceki dönemle karşılaştırmalı ▲▼)
+**Owner — Sipariş istatistikleri**
+- Bugün / son 7 gün / son 30 gün (önceki dönemle karşılaştırmalı ▲▼)
 - Son 14 günün günlük sipariş grafiği, haftanın günlerine göre dağılım
-- En yoğun gün ve saat, sipariş başına ürün sayısı, en büyük sipariş, tekrar eden ve yeni müşteriler
-</details>
+- En yoğun gün ve saat, sipariş başına ürün, en büyük sipariş, tekrar eden ve yeni müşteriler
 
-<details>
-<summary><b>Owner: Stok raporu</b></summary>
-
+**Owner — Stok raporu**
 - Ürün sayısı, toplam stok, stok değeri, stokta olmayan ürünler
 - Düşük stoklu ürünler ve hiç satılmamış ürünler
-</details>
 
-<details>
-<summary><b>Customer: Harcama raporu</b></summary>
-
-- Toplam harcama, sipariş sayısı, ortalama sipariş tutarı, alınan ürün adedi
+**Customer — Harcama raporu**
+- Toplam harcama, sipariş sayısı, ortalama sipariş, alınan ürün adedi
 - Son 6 ayın harcama grafiği, sipariş durumları, şirketlere göre harcama, en çok alınan ürünler
-</details>
 
 > Tutarlara iptal ve iade edilen siparişler dahil edilmez.
 
 ### 🔒 Güvenlik
-
-- Spring Security ile form tabanlı giriş ve CSRF koruması
+- Spring Security ile form tabanlı giriş, CSRF koruması
 - Şifreler BCrypt ile hash'lenerek saklanır
-- Sayfa ve işlem bazında rol kontrolü: ürün ekleme/düzenleme ve sipariş durumu yalnızca Owner'a, `/admin` yalnızca Admin'e açıktır
+- Sayfa ve işlem bazında rol kontrolü (ör. ürün ekleme/düzenleme ve sipariş durumu yalnızca Owner'a, `/admin` yalnızca Admin'e açık)
 - Kayıt formundan yalnızca Owner veya Customer rolü seçilebilir; Admin rolü sadece admin panelinden verilir
+- Owner yalnızca kendi şirketinin ürünlerini ve siparişlerini görebilir ve değiştirebilir; customer yalnızca kendi sepetine ve siparişlerine işlem yapabilir
 - Pasif yapılan hesaplar giriş yapamaz
-- Veritabanı bağlantı bilgileri repoda değil, `.gitignore`'daki yerel ayar dosyasında tutulur
+- Veritabanı şifresi ve admin bilgileri kodda değil, yerel ayar dosyasında veya ortam değişkenlerinde tutulur
 
 ---
 
 ## 🛠️ Teknolojiler
 
-| Katman | Teknoloji |
-|---|---|
-| Dil ve framework | Java 17, Spring Boot 4.1 |
-| Web | Spring Web MVC, Thymeleaf (sunucu tarafında oluşturulan sayfalar) |
-| Güvenlik | Spring Security (form login, rol bazlı yetkilendirme, BCrypt) |
-| Veri erişimi | Spring Data JPA / Hibernate, pessimistic lock |
-| Veritabanı | MySQL 8 |
-| Diğer | Bean Validation, Lombok, Maven |
+- **Java 17**, **Spring Boot 4.1**
+- **Spring Web MVC** + **Thymeleaf**: sunucu tarafında oluşturulan sayfalar
+- **Spring Security**: form tabanlı giriş, rol bazlı yetkilendirme, BCrypt
+- **Spring Data JPA / Hibernate**: veritabanı erişimi, satır kilitleme (pessimistic lock)
+- **MySQL 8**: veritabanı
+- **Bean Validation**, **Lombok**, **Maven**
 
 ---
 
@@ -167,9 +144,13 @@ CREATE DATABASE ordermanagementsystem;
 
 Tablolar uygulama ilk açıldığında otomatik oluşturulur (`ddl-auto: update`).
 
-**3. Yerel ayar dosyasını oluşturun**
+**3. Bağlantı bilgilerini girin**
 
-Uygulama `dev` profiliyle açılır. `src/main/resources/application-dev.yml` dosyasını oluşturup kendi MySQL bilgilerinizi yazın. Bu dosya şifre içerdiği için `.gitignore`'dadır ve GitHub'a gönderilmez.
+Örnek ayar dosyasını kopyalayın ve kendi MySQL bilgilerinizi yazın. `application-dev.yml` şifre içerdiği için `.gitignore`'dadır ve GitHub'a gönderilmez.
+
+```bash
+cp src/main/resources/application-dev.example.yml src/main/resources/application-dev.yml
+```
 
 ```yaml
 spring:
@@ -196,15 +177,21 @@ Tarayıcıda **http://localhost:8080** adresine gidin, bir hesap oluşturun ve g
 
 ### 👤 Admin hesabı
 
-Admin rolü kayıt formundan seçilemez. İki yolla admin hesabı oluşturulabilir:
+İki yol vardır:
 
-**a) Mevcut bir kullanıcıyı admin yapmak (önerilen).** Önce normal bir hesapla kaydolun, ardından uygulamayı o hesabın e-postasıyla başlatın. Birden fazla adres virgülle ayrılır:
+**a) Açılışta admin hesabı oluşturma.** `app.seed.enabled: true` iken uygulama açılışta bir admin hesabı oluşturur (hesap zaten varsa dokunmaz). E-posta ve şifre ortam değişkenlerinden okunur:
+
+```bash
+ADMIN_SEED_EMAIL=admin@ornek.com ADMIN_SEED_PASSWORD=guclu-bir-sifre mvn spring-boot:run
+```
+
+Canlı ortamda `app.seed.enabled` değerini `false` yapın.
+
+**b) Mevcut bir kullanıcıyı admin yapma.** Kayıtlı bir kullanıcının e-postasını ortam değişkeniyle verin (birden fazla adres virgülle ayrılır):
 
 ```bash
 ADMIN_EMAILS=ornek@mail.com mvn spring-boot:run
 ```
-
-**b) Açılışta varsayılan admin hesabı oluşturmak.** `application-dev.yml` içinde `app.seed.enabled: true` yapıldığında uygulama açılışta varsayılan bir admin hesabı oluşturur (hesap zaten varsa dokunmaz). Bu yöntem yalnızca yerel geliştirme içindir; hesabın bilgileri `DataInitializer` sınıfındadır. Canlı ortamda bu ayarı `false` bırakın.
 
 ---
 
@@ -218,7 +205,7 @@ src/main/java/com/ordermanagementsystem
 │   ├── config/       → Güvenlik, şifreleme, admin hesabı oluşturma
 │   ├── controller/   → Sayfa istekleri (Home, Login, Signup, Product, Cart,
 │   │                   Orders, Customers, Reports, Admin)
-│   ├── service/      → İş mantığı (sepet, sipariş, stok, raporlar)
+│   ├── service/      → İş mantığı (sepet, sipariş, stok, raporlar...)
 │   ├── repository/   → Veritabanı erişimi
 │   ├── model/        → Veritabanı tabloları (Entity)
 │   └── data/         → Formlardan gelen ve sayfalara giden veriler (DTO)
@@ -230,10 +217,28 @@ src/main/java/com/ordermanagementsystem
 src/main/resources
 ├── templates/        → HTML sayfaları (Thymeleaf)
 ├── static/css/       → Stil dosyaları
-└── application.yml   → Ortak ayarlar (yerel ayarlar application-dev.yml'de)
+├── application.yml
+└── application-dev.example.yml → Yerel ayar şablonu
 ```
 
-**Veritabanı tabloları:** `users`, `customers`, `products`, `orders`, `orderitem`, `cart_item`
+### Veri modeli
+
+```
+companies ──< users (owner)            users ──< orders ──< orderitem >── products >── companies
+                                       users ──< cart_item >── products
+```
+
+| Tablo | Açıklama |
+|---|---|
+| `users` | Tüm kullanıcılar. Tek rol alanı `user_role` (`CUSTOMER` / `OWNER` / `ADMIN`); owner'larda `company_id` dolu |
+| `companies` | Şirketler; owner'lar ve ürünler `company_id` ile bağlanır (ad benzersiz) |
+| `products` | Ürünler; `company_id` ile şirketine, `product_category` ile `CategoryType` enum'una bağlı |
+| `orders` | Siparişler; `user_id` ile siparişi veren kullanıcıya bağlı |
+| `orderitem` | Sipariş kalemleri (adet ve o anki birim fiyat) |
+| `cart_item` | Sepetteki ürünler |
+
+> Eski veritabanları (ayrı `customers` tablosu, metin şirket adı, iki rol alanı) uygulama açılışında
+> `LegacySchemaMigration` ile otomatik olarak yeni modele taşınır.
 
 ### Sayfalar
 
@@ -242,7 +247,7 @@ src/main/resources
 | `/signup`, `/login` | Herkes | Kayıt ve giriş |
 | `/` | Giriş yapan herkes | Rolüne özel ana sayfa |
 | `/products` | Owner / Customer | Ürün yönetimi / alışveriş |
-| `/orders` | Owner / Customer | Şirketin siparişleri / sepet ve sipariş geçmişi |
+| `/orders` | Owner / Customer | Siparişler / sepet ve sipariş geçmişi |
 | `/customers` | Owner | Şirketten alışveriş yapan müşteriler |
 | `/reports` | Owner / Customer | Satış, sipariş ve stok raporu / harcama raporu |
 | `/admin` | Admin | Kullanıcı yönetimi |
@@ -251,36 +256,23 @@ src/main/resources
 
 ## ⚠️ Bilinen Kısıtlar
 
-- **Şirketler ayrı bir tablo değildir.** Owner'lar şirket adıyla eşleştirilir ve kayıt sırasında şirket adının benzersizliği henüz kontrol edilmemektedir. Bu nedenle aynı adla ikinci bir şirket açılmamalıdır; `companies` tablosuna geçiş yol haritasındadır.
-- **Siparişin durumu tektir.** Bir siparişte birden fazla şirketin ürünü olabilir ve her owner yalnızca kendi kalemlerini görür, ancak bir owner durumu değiştirdiğinde siparişin tamamı etkilenir.
-- **Otomatik testler henüz yazılmamıştır.**
-- Arayüz metinleri İngilizcedir.
+- Bir siparişte birden fazla şirketin ürünü olabilir, ancak siparişin durumu tektir: bir owner durumu değiştirdiğinde veya siparişi iptal ettiğinde siparişin tamamı etkilenir. Şirket başına ayrı durum takibi yol haritasındadır.
+- Şirketler ayrı bir tablo değil, owner kaydındaki şirket adıyla eşleştirilir; aynı adla iki şirket açılmamalıdır.
+- Otomatik testler henüz kapsamlı değildir.
 
 ---
 
 ## 🧭 Yol Haritası
 
-**Tamamlananlar**
-- [x] Sepetten sipariş oluşturma ve stoktan düşme
+- [x] Sepetteki ürünlerden sipariş oluşturma, stoktan düşme
 - [x] Sipariş durumunu güncelleme ve müşteri tarafında takip
 - [x] Sipariş iptali ve iade (stok geri ekleme)
-- [x] Müşteriler sayfası
-- [x] Raporlar sayfası
+- [x] Müşteriler sayfası (`/customers`)
+- [x] Raporlar sayfası (`/reports`)
 - [x] Ürün düzenleme ve kategori seçimi
-
-**Sıradakiler**
-- [ ] Şirketleri ayrı bir tabloya taşıma ve şirket adını benzersiz yapma
-- [ ] Servis katmanı için birim testleri (sepet, checkout, durum geçişleri)
-- [ ] Docker Compose ile tek komutla kurulum
-- [ ] GitHub Actions ile otomatik test
 - [ ] Çok şirketli siparişlerde şirket başına ayrı durum takibi
-- [ ] Ürün silme / pasife alma
-- [ ] Profil ve hesap bilgileri sayfası
-- [ ] Ürün arama, kategoriye göre filtreleme ve sayfalama
-- [ ] Siparişte teslimat adresi
-
----
-
-## 👩‍💻 Geliştirici
-
-**Gülfem Işık** · [GitHub](https://github.com/Gulfem93)
+- [ ] Servis katmanı için birim testleri (sepet, sipariş, stok)
+- [ ] Şirketleri ayrı bir tabloya taşıma
+- [ ] Ürün silme
+- [ ] Profil / hesap bilgileri sayfası (`/profile`)
+- [ ] Ürün arama ve kategoriye göre filtreleme
