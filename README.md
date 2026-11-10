@@ -15,11 +15,24 @@ Sistemde üç rol vardır. Her kullanıcı giriş yaptığında rolüne özel bi
 | **Customer** (müşteri) | Farklı şirketlerin ürünlerini inceler, sepete ekler, satın alır ve siparişini takip eder. |
 | **Admin** (yönetici) | Kullanıcıların rollerini değiştirir, hesapları aktif veya pasif yapar. |
 
-<!-- Ekran görüntüleri: docs/ klasörüne ekleyip aşağıdaki satırları açın -->
 <!--
-| Owner paneli | Sipariş takibi | Raporlar |
-|---|---|---|
-| ![Owner paneli](docs/owner-dashboard.png) | ![Sipariş takibi](docs/order-tracking.png) | ![Raporlar](docs/reports.png) |
+  EKRAN GÖRÜNTÜLERİ
+  1. Görselleri docs/ klasörüne şu adlarla koyun:
+     owner-dashboard.png, products.png, order-tracking.png, reports.png, demo.gif
+  2. Bu yorum bloğunu silip aşağıdaki bölümü yorumdan çıkarın.
+-->
+<!--
+## 📸 Ekran Görüntüleri
+
+![Uygulama demosu: sepete ekle, satın al, owner onaylar](docs/demo.gif)
+
+| Owner paneli | Ürün yönetimi |
+|---|---|
+| ![Owner paneli](docs/owner-dashboard.png) | ![Ürün yönetimi](docs/products.png) |
+
+| Sipariş takibi (Customer) | Raporlar |
+|---|---|
+| ![Sipariş takibi](docs/order-tracking.png) | ![Raporlar](docs/reports.png) |
 -->
 
 ## İçindekiler
@@ -43,20 +56,56 @@ Sistemde üç rol vardır. Her kullanıcı giriş yaptığında rolüne özel bi
 - **Veri izolasyonu:** Owner yalnızca kendi şirketinin ürünlerini ve sipariş kalemlerini görür. Customer yalnızca kendi sepetinde ve siparişlerinde işlem yapabilir. Başkasına ait bir kayda erişim denemesi "bulunamadı" olarak döner.
 - **Sunucu tarafı raporlama:** Owner için satış, sipariş ve stok raporları; customer için harcama raporu.
 
+### Satın alma (checkout) nasıl çalışır?
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor C as Customer
+    participant Ctrl as CartController
+    participant S as CartService
+    participant DB as MySQL
+
+    C->>Ctrl: POST /cart/checkout
+    Ctrl->>S: checkout(email)
+    Note over S,DB: @Transactional başlar
+    S->>DB: Sepet kalemlerini getir
+    loop Sepetteki her ürün için
+        S->>DB: SELECT ... FOR UPDATE (satır kilidi)
+        alt Stok yeterli
+            S->>DB: Stoğu düş, sipariş kalemi ekle
+        else Stok yetersiz
+            S-->>DB: ROLLBACK: hiçbir değişiklik kaydedilmez
+            S-->>Ctrl: "Yeterli stok yok"
+        end
+    end
+    S->>DB: Siparişi kaydet (PENDING), sepeti boşalt
+    Note over S,DB: COMMIT
+    Ctrl-->>C: My Orders sayfasına yönlendir
+```
+
 ---
 
 ## 🔄 Sipariş Akışı
 
-```
- Customer satın alır      Owner onaylar        Owner kargoya verir     Customer "Teslim aldım" der
-        │                      │                       │                        │
-        ▼                      ▼                       ▼                        ▼
-   ┌─────────┐           ┌───────────┐           ┌──────────┐            ┌───────────┐
-   │ PENDING │ ────────▶ │ PREPARING │ ────────▶ │ SHIPPED  │ ─────────▶ │ DELIVERED │
-   └─────────┘           └───────────┘           └──────────┘            └───────────┘
-        │                      │                                                │
-        ▼                      ▼                                                ▼
-   CANCELLED  ◀────────────────┘                                          RETURNED (iade)
+```mermaid
+stateDiagram-v2
+    direction LR
+    [*] --> PENDING: Customer satın alır
+    PENDING --> PREPARING: Owner onaylar
+    PREPARING --> SHIPPED: Owner kargoya verir
+    SHIPPED --> DELIVERED: Customer teslim aldı / Owner işaretler
+    DELIVERED --> RETURNED: Owner iade olarak işaretler
+
+    PENDING --> CANCELLED: Customer veya Owner iptal eder
+    PREPARING --> CANCELLED: Owner iptal eder
+
+    CANCELLED --> [*]
+    RETURNED --> [*]
+    DELIVERED --> [*]
+
+    note right of CANCELLED: Stok geri eklenir
+    note right of RETURNED: Stok geri eklenir
 ```
 
 | Kural | Açıklama |
@@ -233,7 +282,70 @@ src/main/resources
 └── application.yml   → Ortak ayarlar (yerel ayarlar application-dev.yml'de)
 ```
 
-**Veritabanı tabloları:** `users`, `customers`, `products`, `orders`, `orderitem`, `cart_item`
+### Katmanlar
+
+```mermaid
+flowchart LR
+    B["🌐 Tarayıcı"] -->|HTTP| SEC["Spring Security<br/>giriş + rol kontrolü"]
+    SEC --> C["Controller<br/>(Thymeleaf sayfaları)"]
+    C --> S["Service<br/>iş mantığı, transaction"]
+    S --> R["Repository<br/>Spring Data JPA"]
+    R --> DB[("MySQL")]
+    S -.-> E["OrderStatus<br/>geçiş kuralları"]
+```
+
+### Veritabanı
+
+```mermaid
+erDiagram
+    users ||--o{ cart_item : "sepete ekler"
+    users ||..o| customers : "e-posta ile eşleşir"
+    customers ||--o{ orders : "verir"
+    orders ||--|{ orderitem : "içerir"
+    products ||--o{ orderitem : "satılır"
+    products ||--o{ cart_item : "sepette"
+
+    users {
+        bigint user_id PK
+        string user_email
+        string user_role "OWNER / CUSTOMER / ADMIN"
+        boolean user_active
+        string company_name "Owner'ın şirketi"
+    }
+    customers {
+        bigint customer_id PK
+        string customer_email
+    }
+    products {
+        bigint product_id PK
+        string product_code
+        decimal product_price
+        bigint product_stock
+        string product_category
+        string company_name
+    }
+    orders {
+        bigint order_id PK
+        datetime order_date
+        string order_status
+        bigint customer_id FK
+    }
+    orderitem {
+        bigint order_item_id PK
+        bigint order_id FK
+        bigint product_id FK
+        bigint orderitem_quantity
+        decimal orderitem_unit_price "satın alma anındaki fiyat"
+    }
+    cart_item {
+        bigint cart_item_id PK
+        bigint customer_id FK "users tablosuna bağlı"
+        bigint product_id FK
+        int quantity
+    }
+```
+
+> Owner'lar ürünlerle tablo ilişkisiyle değil, `company_name` alanı üzerinden eşleşir (bkz. [Bilinen Kısıtlar](#️-bilinen-kısıtlar)).
 
 ### Sayfalar
 
