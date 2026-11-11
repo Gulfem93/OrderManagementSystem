@@ -1,6 +1,7 @@
 package com.ordermanagementsystem.dev.service;
 
 import java.math.BigDecimal;
+import java.util.Comparator;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -69,13 +70,13 @@ public class OrderService {
     @Transactional
     public void cancelOrder(Long orderId, String customerEmail) {
         OrdersModel order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("Sipariş bulunamadı: " + orderId));
+                .orElseThrow(() -> new IllegalArgumentException("Order not found."));
 
         if (!order.getCustomer().getUserEmail().equalsIgnoreCase(customerEmail)) {
-            throw new IllegalArgumentException("Sipariş bulunamadı: " + orderId);
+            throw new IllegalArgumentException("Order not found.");
         }
         if (order.getOrderStatus() == null || !order.getOrderStatus().isCancellable()) {
-            throw new IllegalStateException("Sadece bekleyen (PENDING) siparişler iptal edilebilir");
+            throw new IllegalStateException("Only orders awaiting approval can be cancelled.");
         }
 
         restoreStock(order);
@@ -86,13 +87,13 @@ public class OrderService {
     @Transactional
     public void confirmReceived(Long orderId, String customerEmail) {
         OrdersModel order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("Sipariş bulunamadı: " + orderId));
+                .orElseThrow(() -> new IllegalArgumentException("Order not found."));
 
         if (!order.getCustomer().getUserEmail().equalsIgnoreCase(customerEmail)) {
-            throw new IllegalArgumentException("Sipariş bulunamadı: " + orderId);
+            throw new IllegalArgumentException("Order not found.");
         }
         if (order.getOrderStatus() == null || !order.getOrderStatus().isReceivable()) {
-            throw new IllegalStateException("Sadece kargodaki siparişler teslim alındı olarak işaretlenebilir");
+            throw new IllegalStateException("Only shipped orders can be marked as received.");
         }
 
         order.setOrderStatus(OrderStatus.DELIVERED);
@@ -103,18 +104,17 @@ public class OrderService {
     @Transactional
     public void updateStatus(Long orderId, OrderStatus newStatus, Long companyId) {
         OrdersModel order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("Sipariş bulunamadı: " + orderId));
+                .orElseThrow(() -> new IllegalArgumentException("Order not found."));
 
         boolean ownsItem = order.getItems().stream()
                 .anyMatch(item -> item.getProduct().belongsTo(companyId));
         if (!ownsItem) {
-            throw new IllegalArgumentException("Sipariş bulunamadı: " + orderId);
+            throw new IllegalArgumentException("Order not found.");
         }
         if (newStatus == null || order.getOrderStatus() == null || !order.getOrderStatus().canChangeTo(newStatus)) {
-            throw new IllegalStateException("Bu sipariş "
+            throw new IllegalStateException("This order cannot be changed from "
                     + (order.getOrderStatus() == null ? "-" : order.getOrderStatus().getLabel())
-                    + " durumundan " + (newStatus == null ? "-" : newStatus.getLabel())
-                    + " durumuna geçirilemez");
+                    + " to " + (newStatus == null ? "-" : newStatus.getLabel()) + ".");
         }
 
         if (newStatus.restoresStock()) {
@@ -123,10 +123,14 @@ public class OrderService {
         order.setOrderStatus(newStatus);
     }
 
+    // Ürün id sırasıyla kilitler (checkout ile aynı sıra; deadlock olmaz)
     private void restoreStock(OrdersModel order) {
-        for (OrderItemModel item : order.getItems()) {
+        List<OrderItemModel> lockOrder = order.getItems().stream()
+                .sorted(Comparator.comparing(item -> item.getProduct().getProductId()))
+                .toList();
+        for (OrderItemModel item : lockOrder) {
             ProductsModel product = productRepository.findByIdForUpdate(item.getProduct().getProductId())
-                    .orElseThrow(() -> new IllegalArgumentException("Ürün bulunamadı"));
+                    .orElseThrow(() -> new IllegalArgumentException("Product not found."));
             long stock = product.getProductStock() == null ? 0 : product.getProductStock();
             product.setProductStock(stock + item.getOrderitemQuantity());
         }

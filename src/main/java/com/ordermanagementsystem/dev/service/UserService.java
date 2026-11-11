@@ -1,5 +1,6 @@
 package com.ordermanagementsystem.dev.service;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,10 +48,11 @@ public class UserService {
 
         UsersModel user = new UsersModel();
         user.setUserEmail(userData.getUserEmail().trim());
-        user.setUserName(userData.getUserName());
+        user.setUserName(userData.getUserName().trim());
         user.setUserPassword(passwordEncoder.encode(userData.getUserPassword()));
-        user.setUserSurname(userData.getUserSurname());
-        user.setUserPhone(userData.getUserPhone());
+        user.setUserSurname(userData.getUserSurname().trim());
+        user.setUserPhone(userData.getUserPhone() == null || userData.getUserPhone().isBlank()
+                ? null : userData.getUserPhone().trim());
         user.setUserRole(role);
         user.setUserActive(true);
 
@@ -65,7 +67,12 @@ public class UserService {
             user.setCompany(companyRepository.save(company));
         }
 
-        return userRepository.save(user);
+        try {
+            // saveAndFlush: benzersizlik ihlali burada yakalanır, controller'a anlaşılır mesaj gider
+            return userRepository.saveAndFlush(user);
+        } catch (DataIntegrityViolationException e) {
+            throw new IllegalArgumentException("A user with this email address is already registered.");
+        }
     }
 
     // Owner'ın şirketi (ürün eklerken ürüne bağlanır)

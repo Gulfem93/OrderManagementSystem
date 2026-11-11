@@ -51,7 +51,8 @@ Sistemde üç rol vardır. Her kullanıcı giriş yaptığında rolüne özel bi
 ## 💡 Öne Çıkan Teknik Noktalar
 
 - **Tutarlı satın alma:** Sepetten sipariş oluşturma tek bir transaction içinde çalışır. Sepetteki herhangi bir üründe stok yetmezse sipariş oluşturulmaz ve hiçbir stok değişmez.
-- **Eşzamanlılık güvenliği:** Stok güncellenirken ürün satırı kilitlenir (pessimistic lock). Aynı anda gelen siparişler stoğu eksiye düşüremez.
+- **Şirket başına sipariş:** Sepette farklı şirketlerin ürünleri varsa her şirket için ayrı bir sipariş oluşur. Böylece bir owner'ın onay veya iptal işlemi başka bir şirketin siparişini ve stoğunu etkilemez.
+- **Eşzamanlılık güvenliği:** Stok güncellenirken ürün satırı kilitlenir (pessimistic lock). Aynı anda gelen siparişler stoğu eksiye düşüremez. Satırlar her zaman ürün id sırasıyla kilitlendiği için eşzamanlı siparişler birbirini kilitleyemez (deadlock olmaz).
 - **Durum makinesi tek yerde:** Hangi durumdan hangisine geçilebileceği, hangi durumda iptal yapılabileceği ve stoğun ne zaman geri ekleneceği `OrderStatus` enum'unda tanımlıdır.
 - **Veri izolasyonu:** Owner yalnızca kendi şirketinin ürünlerini ve sipariş kalemlerini görür. Customer yalnızca kendi sepetinde ve siparişlerinde işlem yapabilir. Başkasına ait bir kayda erişim denemesi "bulunamadı" olarak döner.
 - **Sunucu tarafı raporlama:** Owner için satış, sipariş ve stok raporları; customer için harcama raporu.
@@ -70,7 +71,7 @@ sequenceDiagram
     Ctrl->>S: checkout(email)
     Note over S,DB: @Transactional başlar
     S->>DB: Sepet kalemlerini getir
-    loop Sepetteki her ürün için
+    loop Sepetteki her ürün için (ürün id sırasıyla)
         S->>DB: SELECT ... FOR UPDATE (satır kilidi)
         alt Stok yeterli
             S->>DB: Stoğu düş, sipariş kalemi ekle
@@ -79,7 +80,7 @@ sequenceDiagram
             S-->>Ctrl: "Yeterli stok yok"
         end
     end
-    S->>DB: Siparişi kaydet (PENDING), sepeti boşalt
+    S->>DB: Her şirket için ayrı sipariş kaydet (PENDING), sepeti boşalt
     Note over S,DB: COMMIT
     Ctrl-->>C: My Orders sayfasına yönlendir
 ```
@@ -179,6 +180,8 @@ stateDiagram-v2
 - Şifreler BCrypt ile hash'lenerek saklanır
 - Sayfa ve işlem bazında rol kontrolü: ürün ekleme/düzenleme ve sipariş durumu yalnızca Owner'a, `/admin` yalnızca Admin'e açıktır
 - Kayıt formundan yalnızca Owner veya Customer rolü seçilebilir; Admin rolü sadece admin panelinden verilir
+- Kayıt formu sunucu tarafında doğrulanır (zorunlu alanlar, geçerli e-posta, en az 8 karakterlik şifre); e-posta veritabanında da benzersizdir
+- Sepet ve satın alma yalnızca Customer'a açıktır
 - Pasif yapılan hesaplar giriş yapamaz
 - Veritabanı bağlantı bilgileri repoda değil, `.gitignore`'daki yerel ayar dosyasında tutulur
 
@@ -193,6 +196,7 @@ stateDiagram-v2
 | Güvenlik | Spring Security (form login, rol bazlı yetkilendirme, BCrypt) |
 | Veri erişimi | Spring Data JPA / Hibernate, pessimistic lock |
 | Veritabanı | MySQL 8 |
+| Test | JUnit 5, Mockito, Spring Security Test, H2 (bellekte veritabanı) |
 | Diğer | Bean Validation, Lombok, Maven |
 
 ---
@@ -253,7 +257,27 @@ Admin rolü kayıt formundan seçilemez. İki yolla admin hesabı oluşturulabil
 ADMIN_EMAILS=ornek@mail.com mvn spring-boot:run
 ```
 
-**b) Açılışta varsayılan admin hesabı oluşturmak.** `application-dev.yml` içinde `app.seed.enabled: true` yapıldığında uygulama açılışta varsayılan bir admin hesabı oluşturur (hesap zaten varsa dokunmaz). Bu yöntem yalnızca yerel geliştirme içindir; hesabın bilgileri `DataInitializer` sınıfındadır. Canlı ortamda bu ayarı `false` bırakın.
+**b) Açılışta admin hesabı oluşturmak.** `application-dev.yml` içinde `app.seed.enabled: true` yapıldığında uygulama açılışta bir admin hesabı oluşturur (hesap zaten varsa dokunmaz). Şifre koda yazılmaz; `SEED_ADMIN_PASSWORD` ortam değişkeninden (veya `app.seed.admin-password` ayarından) okunur. E-posta `SEED_ADMIN_EMAIL` ile değiştirilebilir. Şifre verilmezse hesap oluşturulmaz. Bu yöntem yalnızca yerel geliştirme içindir.
+
+```bash
+SEED_ADMIN_PASSWORD=guclu-bir-sifre mvn spring-boot:run
+```
+
+### 🧪 Testler
+
+```bash
+mvn test
+```
+
+Testler MySQL gerektirmez; `test` profiliyle bellekte çalışan H2 veritabanını kullanır (`src/test/resources/application-test.yml`).
+
+| Test | Neyi doğrular |
+|---|---|
+| `CartServiceTest` | Checkout stoğu düşer, şirket başına sipariş oluşturur, ürünleri id sırasıyla kilitler, stok yetmezse hiçbir şey kaydetmez |
+| `OrderServiceTest` | Durum geçişleri, iptalde stok iadesi, başka şirketin / müşterinin siparişine erişim engeli |
+| `UserServiceTest` | Kayıt: şifre hash'leme, owner için şirket oluşturma, admin rolünün seçilememesi, tekrar eden e-posta |
+| `OrderStatusTest` | Sipariş durum makinesi kuralları |
+| `SecurityAccessTest` | Rol bazlı erişim (sepet, ürün ekleme, admin paneli), CSRF, kayıt formu doğrulaması |
 
 ---
 
@@ -365,8 +389,8 @@ erDiagram
 
 ## ⚠️ Bilinen Kısıtlar
 
-- **Siparişin durumu tektir.** Bir siparişte birden fazla şirketin ürünü olabilir ve her owner yalnızca kendi kalemlerini görür, ancak bir owner durumu değiştirdiğinde siparişin tamamı etkilenir.
-- **Otomatik testler henüz yazılmamıştır.**
+- **Eski çok şirketli siparişler.** Yeni siparişler şirket başına bölünür. Bu değişiklikten önce oluşturulmuş ve birden fazla şirketin ürününü içeren siparişlerde, bir owner durumu değiştirdiğinde siparişin tamamı etkilenir.
+- Veritabanı şeması `ddl-auto: update` ve `LegacySchemaMigration` ile yönetilir; Flyway/Liquibase gibi sürümlü bir migration aracı yoktur.
 - Arayüz metinleri İngilizcedir.
 
 ---
@@ -383,10 +407,10 @@ erDiagram
 
 **Sıradakiler**
 - [x] Şirketleri ayrı bir tabloya taşıma, `customers` tablosunu kaldırma, tek rol alanı
-- [ ] Servis katmanı için birim testleri (sepet, checkout, durum geçişleri)
+- [x] Servis katmanı için birim testleri (sepet, checkout, durum geçişleri) ve güvenlik testleri
+- [x] Sepeti şirket başına ayrı siparişlere bölme
 - [ ] Docker Compose ile tek komutla kurulum
 - [ ] GitHub Actions ile otomatik test
-- [ ] Çok şirketli siparişlerde şirket başına ayrı durum takibi
 - [ ] Ürün silme / pasife alma
 - [ ] Profil ve hesap bilgileri sayfası
 - [ ] Ürün arama, kategoriye göre filtreleme ve sayfalama

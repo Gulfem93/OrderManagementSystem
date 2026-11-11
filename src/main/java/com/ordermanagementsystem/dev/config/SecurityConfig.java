@@ -19,8 +19,10 @@ public class SecurityConfig {
                                                 // Ürün listesini herkes görür, ürün ekleme/değiştirme sadece OWNER
                                                 .requestMatchers(HttpMethod.POST, "/products/**").hasRole("OWNER")
                                                 .requestMatchers("/products/*/edit").hasRole("OWNER")
-                                                // Sipariş iptali: customer kendi siparişini iptal edebilir (kontrol OrderService'te)
-                                                .requestMatchers(HttpMethod.POST, "/orders/*/cancel", "/orders/*/received").authenticated()
+                                                // Sepet ve satın alma sadece CUSTOMER (owner/admin alışveriş yapmaz)
+                                                .requestMatchers("/cart/**").hasRole("CUSTOMER")
+                                                // Sipariş iptali / teslim alma: customer kendi siparişi için (sahiplik kontrolü OrderService'te)
+                                                .requestMatchers(HttpMethod.POST, "/orders/*/cancel", "/orders/*/received").hasRole("CUSTOMER")
                                                 .requestMatchers(HttpMethod.POST, "/orders/**").hasRole("OWNER")
                                                 .anyRequest().authenticated())
                                 .formLogin(form -> form

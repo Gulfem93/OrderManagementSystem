@@ -2,7 +2,10 @@ package com.ordermanagementsystem.dev.service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,10 +45,10 @@ public class CartService {
         int quantity = (data.getQuantity() == null || data.getQuantity() < 1) ? 1 : data.getQuantity();
 
         UsersModel customer = userRepository.findByUserEmail(userEmail)
-                .orElseThrow(() -> new IllegalArgumentException("Kullanıcı bulunamadı: " + userEmail));
+                .orElseThrow(() -> new IllegalArgumentException("User not found."));
 
         ProductsModel product = productRepository.findById(data.getProductId())
-                .orElseThrow(() -> new IllegalArgumentException("Ürün bulunamadı: " + data.getProductId()));
+                .orElseThrow(() -> new IllegalArgumentException("Product not found."));
 
         // Sepette bu ürün varsa adedini artır, yoksa yeni kalem oluştur
         CartItemModel item = cartRepository.findByCustomerAndProduct(customer, product)
@@ -62,7 +65,7 @@ public class CartService {
         // Sepetteki toplam adet stoğu geçmesin
         Long stock = product.getProductStock();
         if (stock == null || stock < newQuantity) {
-            throw new IllegalStateException("Yeterli stok yok");
+            throw new IllegalStateException("Not enough stock.");
         }
 
         item.setQuantity(newQuantity);
@@ -82,7 +85,7 @@ public class CartService {
 
         Long stock = item.getProduct().getProductStock();
         if (stock == null || stock < newQuantity) {
-            throw new IllegalStateException("Yeterli stok yok");
+            throw new IllegalStateException("Not enough stock.");
         }
 
         item.setQuantity(newQuantity);
@@ -97,38 +100,48 @@ public class CartService {
     // Kullanıcı sadece kendi sepetindeki kalemi değiştirebilir
     private CartItemModel findOwnItem(String userEmail, Long cartItemId) {
         CartItemModel item = cartRepository.findById(cartItemId)
-                .orElseThrow(() -> new IllegalArgumentException("Sepet kalemi bulunamadı: " + cartItemId));
+                .orElseThrow(() -> new IllegalArgumentException("Cart item not found."));
         if (!item.getCustomer().getUserEmail().equals(userEmail)) {
-            throw new IllegalArgumentException("Sepet kalemi bulunamadı: " + cartItemId);
+            throw new IllegalArgumentException("Cart item not found.");
         }
         return item;
     }
 
     // Sepeti siparişe çevirir: stokları düşer, sipariş oluşturur, sepeti boşaltır.
+    // Her şirket için ayrı sipariş oluşur; böylece bir owner'ın onay/iptal işlemi
+    // başka bir şirketin ürünlerini ve stoğunu etkilemez.
     // Herhangi bir üründe stok yetmezse hiçbir değişiklik kaydedilmez (transaction geri alınır).
     @Transactional
-    public OrdersModel checkout(String userEmail) {
+    public List<OrdersModel> checkout(String userEmail) {
         List<CartItemModel> cartItems = cartRepository.findByCustomer_UserEmailOrderByCartItemIdDesc(userEmail);
         if (cartItems.isEmpty()) {
-            throw new IllegalStateException("Sepetiniz boş");
+            throw new IllegalStateException("Your cart is empty.");
         }
 
-        OrdersModel order = new OrdersModel();
-        // Sipariş doğrudan kullanıcıya bağlanır (ayrı customers kaydı yok)
-        order.setCustomer(cartItems.get(0).getCustomer());
-        order.setOrderStatus(OrderStatus.PENDING);
-        order.setOrderDate(LocalDateTime.now());
+        UsersModel customer = cartItems.get(0).getCustomer();
+        LocalDateTime now = LocalDateTime.now();
 
-        for (CartItemModel cartItem : cartItems) {
+        // Satırlar her zaman ürün id sırasıyla kilitlenir: aynı ürünleri farklı sırada alan
+        // iki eşzamanlı checkout birbirini beklemez (deadlock olmaz)
+        List<CartItemModel> lockOrder = cartItems.stream()
+                .sorted(Comparator.comparing(item -> item.getProduct().getProductId()))
+                .toList();
+
+        // Şirket id → o şirketin siparişi (ürün sırası korunur)
+        Map<Long, OrdersModel> ordersByCompany = new LinkedHashMap<>();
+        for (CartItemModel cartItem : lockOrder) {
             ProductsModel product = productRepository.findByIdForUpdate(cartItem.getProduct().getProductId())
-                    .orElseThrow(() -> new IllegalArgumentException("Ürün bulunamadı"));
+                    .orElseThrow(() -> new IllegalArgumentException("Product not found."));
 
             long quantity = cartItem.getQuantity();
             Long stock = product.getProductStock();
             if (stock == null || stock < quantity) {
-                throw new IllegalStateException("Yeterli stok yok: " + product.getProductName());
+                throw new IllegalStateException("Not enough stock: " + product.getProductName());
             }
             product.setProductStock(stock - quantity);
+
+            Long companyId = product.getCompany() == null ? null : product.getCompany().getCompanyId();
+            OrdersModel order = ordersByCompany.computeIfAbsent(companyId, id -> newOrder(customer, now));
 
             OrderItemModel orderItem = new OrderItemModel();
             orderItem.setOrder(order);
@@ -138,9 +151,17 @@ public class CartService {
             order.getItems().add(orderItem);
         }
 
-        OrdersModel saved = orderRepository.save(order);
+        List<OrdersModel> saved = orderRepository.saveAll(ordersByCompany.values());
         cartRepository.deleteAll(cartItems);
         return saved;
+    }
+
+    private OrdersModel newOrder(UsersModel customer, LocalDateTime date) {
+        OrdersModel order = new OrdersModel();
+        order.setCustomer(customer);
+        order.setOrderStatus(OrderStatus.PENDING);
+        order.setOrderDate(date);
+        return order;
     }
 
     // Customer: sepetindeki ürünler (My Orders sayfası için), en son eklenen üstte

@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -23,8 +24,10 @@ import org.springframework.stereotype.Component;
  * Hibernate (ddl-auto: update) yeni sütunları ekler ama veri taşımaz ve eski sütunları silmez;
  * özellikle eski NOT NULL orders.customer_id sütunu kalırsa yeni sipariş kaydedilemez.
  * Diğer başlangıç işlerinden (admin oluşturma vb.) önce çalışır.
+ * MySQL'e özel SQL kullandığı için testlerde (H2, "test" profili) çalışmaz.
  */
 @Component
+@Profile("!test")
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class LegacySchemaMigration implements ApplicationRunner {
 

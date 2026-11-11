@@ -20,8 +20,6 @@ import com.ordermanagementsystem.enums.OrderStatus;
 
 @Controller
 public class OrdersController {
-    private static final String ROLE_OWNER = "ROLE_OWNER";
-
     private final OrderService orderService;
     private final UserService userService;
     private final CartService cartService;
@@ -36,7 +34,7 @@ public class OrdersController {
     @GetMapping("/orders")
     public String getOrderPage(@RequestParam(required = false) OrderStatus status,
             Authentication auth, Model model) {
-        boolean owner = isOwner(auth);
+        boolean owner = AuthRoles.isOwner(auth);
         UsersData userData = userService.getUserData(auth.getName());
 
         model.addAttribute("userData", userData);
@@ -80,7 +78,7 @@ public class OrdersController {
         try {
             orderService.confirmReceived(orderId, auth.getName());
             redirectAttributes.addFlashAttribute("statusUpdated",
-                    "#" + orderId + " numaralı siparişi teslim aldınız. İyi günlerde kullanın!");
+                    "Order #" + orderId + " marked as received. Enjoy!");
         } catch (IllegalArgumentException | IllegalStateException e) {
             redirectAttributes.addFlashAttribute("cartError", e.getMessage());
         }
@@ -97,15 +95,10 @@ public class OrdersController {
             Long companyId = userService.getUserData(auth.getName()).getCompanyId();
             orderService.updateStatus(orderId, status, companyId);
             redirectAttributes.addFlashAttribute("statusUpdated",
-                    "#" + orderId + " numaralı sipariş: " + status.getLabel());
+                    "Order #" + orderId + ": " + status.getLabel());
         } catch (IllegalArgumentException | IllegalStateException e) {
             redirectAttributes.addFlashAttribute("cartError", e.getMessage());
         }
         return "redirect:/orders";
-    }
-
-    private boolean isOwner(Authentication auth) {
-        return auth.getAuthorities().stream()
-                .anyMatch(a -> ROLE_OWNER.equals(a.getAuthority()));
     }
 }

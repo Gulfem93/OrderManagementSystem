@@ -96,10 +96,10 @@
         </header>
 
         <main>
-            <div th:if="${param.ordered}" class="notice notice_success">Siparişiniz alındı, ürünler stoktan düşüldü.</div>
-            <div th:if="${param.cancelled}" class="notice notice_success">Sipariş iptal edildi, ürünler stoğa geri eklendi.</div>
-            <div th:if="${statusUpdated}" class="notice notice_success" th:text="${statusUpdated}">Durum güncellendi.</div>
-            <div th:if="${cartError}" class="notice notice_error" th:text="${cartError}">Hata</div>
+            <div th:if="${param.ordered}" class="notice notice_success">Your order has been placed. Items from different companies appear as separate orders.</div>
+            <div th:if="${param.cancelled}" class="notice notice_success">Order cancelled and items returned to stock.</div>
+            <div th:if="${statusUpdated}" class="notice notice_success" th:text="${statusUpdated}">Status updated.</div>
+            <div th:if="${cartError}" class="notice notice_error" th:text="${cartError}">Error</div>
 
             <!-- ============ CUSTOMER: SEPETE EKLENEN ÜRÜNLER ============ -->
             <section class="panel" th:unless="${isOwner}">

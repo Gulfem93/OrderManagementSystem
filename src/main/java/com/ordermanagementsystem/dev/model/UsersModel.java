@@ -28,7 +28,8 @@ public class UsersModel {
 
     @NotBlank(message = "Email field cannot be blank!")
     @Email(message = "Invalid email address!")
-    @Column
+    // Veritabanı seviyesinde de benzersiz: aynı anda gelen iki kayıt aynı email'i alamaz
+    @Column(nullable = false, unique = true, length = 150)
     private String userEmail;
 
     @NotBlank(message = "Password field cannot be blank!")

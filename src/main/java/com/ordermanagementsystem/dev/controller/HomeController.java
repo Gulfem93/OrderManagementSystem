@@ -26,25 +26,20 @@ public class HomeController {
 
     @GetMapping("/")
     public String home(Authentication auth, Model model) {
-        boolean isAdmin = auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        if (isAdmin) {
+        if (AuthRoles.isAdmin(auth)) {
             return "redirect:/admin";
         }
 
         UsersData userData = userService.getUserData(auth.getName());
         model.addAttribute("userData", userData);
 
-        boolean isOwner = auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_OWNER"));
-
-        if (isOwner) {
+        if (AuthRoles.isOwner(auth)) {
             // Owner sadece kendi şirketinin rakamlarını görür
             Long companyId = userData.getCompanyId();
             model.addAttribute("stats", new DashboardStats(
                     orderService.countOrdersByCompany(companyId),
                     orderService.countOrdersByCompanyAndStatus(companyId, OrderStatus.PENDING),
-                    productService.countLowStock(companyId, 5), // stok <= 5
+                    productService.countLowStock(companyId),
                     orderService.countCustomersByCompany(companyId)));
         } else {
             model.addAttribute("recentOrders", orderService.getRecentOrdersByCustomerEmail(auth.getName()));

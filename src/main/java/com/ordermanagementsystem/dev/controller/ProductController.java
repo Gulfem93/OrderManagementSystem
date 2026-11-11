@@ -26,9 +26,6 @@ import jakarta.validation.Valid;
 @RequestMapping("/products")
 public class ProductController {
 
-    private static final int LOW_STOCK_THRESHOLD = 5;
-    private static final String ROLE_OWNER = "ROLE_OWNER";
-
     private final ProductService productService;
     private final UserService userService;
     private final OrderService orderService;
@@ -115,14 +112,9 @@ public class ProductController {
         return "products";
     }
 
-    private boolean isOwner(Authentication auth) {
-        return auth.getAuthorities().stream()
-                .anyMatch(a -> ROLE_OWNER.equals(a.getAuthority()));
-    }
-
     // GET ve POST (hata durumu) için sayfanın ihtiyaç duyduğu tüm model verisi
     private void fillPage(Authentication auth, Model model) {
-        boolean owner = isOwner(auth);
+        boolean owner = AuthRoles.isOwner(auth);
         UsersData userData = userService.getUserData(auth.getName());
 
         if (owner) {
@@ -131,7 +123,7 @@ public class ProductController {
             model.addAttribute("stats", new DashboardStats(
                     orderService.countOrdersByCompany(companyId),
                     orderService.countOrdersByCompanyAndStatus(companyId, OrderStatus.PENDING),
-                    productService.countLowStock(companyId, LOW_STOCK_THRESHOLD),
+                    productService.countLowStock(companyId),
                     orderService.countCustomersByCompany(companyId)));
             model.addAttribute("products", productService.findByCompany(companyId));
             model.addAttribute("categoryRoots", CategoryType.roots());
@@ -144,6 +136,6 @@ public class ProductController {
 
         model.addAttribute("userData", userData);
         model.addAttribute("isOwner", owner);
-        model.addAttribute("lowStock", LOW_STOCK_THRESHOLD);
+        model.addAttribute("lowStock", ProductService.LOW_STOCK_THRESHOLD);
     }
 }

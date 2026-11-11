@@ -16,6 +16,9 @@ import com.ordermanagementsystem.dev.repository.ProductRepository;
 
 @Service
 public class ProductService {
+    // Stoğu bu değer veya altında olan ürünler "düşük stok" sayılır (tüm sayfalar aynı eşiği kullanır)
+    public static final long LOW_STOCK_THRESHOLD = 5;
+
     private static final String NO_COMPANY = "Other";
     private static final Sort BY_NAME = Sort.by("productName");
 
@@ -105,11 +108,11 @@ public class ProductService {
                 .orElseThrow(() -> new IllegalArgumentException("Product not found."));
     }
 
-    public long countLowStock(long threshold) {
-        return productRepository.countByProductStockLessThanEqual(threshold);
+    public long countLowStock() {
+        return productRepository.countByProductStockLessThanEqual(LOW_STOCK_THRESHOLD);
     }
 
-    public long countLowStock(Long companyId, long threshold) {
-        return productRepository.countByCompany_CompanyIdAndProductStockLessThanEqual(companyId, threshold);
+    public long countLowStock(Long companyId) {
+        return productRepository.countByCompany_CompanyIdAndProductStockLessThanEqual(companyId, LOW_STOCK_THRESHOLD);
     }
 }

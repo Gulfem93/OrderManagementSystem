@@ -46,10 +46,16 @@
                     <div class="field">
                         <label for="userName">Name</label>
                         <input type="text" th:field="*{userName}" id="userName" name="userName" placeholder="John" required />
+                        <span class="alert alert_error"
+                            th:if="${#fields.hasErrors('userName')}"
+                            th:errors="*{userName}"></span>
                     </div>
                     <div class="field">
                         <label for="userSurname">Surname</label>
                         <input type="text" id="userSurname" th:field="*{userSurname}" name="userSurname" placeholder="Doe" required />
+                        <span class="alert alert_error"
+                            th:if="${#fields.hasErrors('userSurname')}"
+                            th:errors="*{userSurname}"></span>
                     </div>
                 </div>
 
@@ -63,7 +69,10 @@
 
                 <div class="field">
                     <label for="userPassword">Password</label>
-                    <input type="password" id="userPassword" th:field="*{userPassword}" name="userPassword" placeholder="••••••••" required />
+                    <input type="password" id="userPassword" th:field="*{userPassword}" name="userPassword" placeholder="••••••••" minlength="8" maxlength="72" required />
+                    <span class="alert alert_error"
+                        th:if="${#fields.hasErrors('userPassword')}"
+                        th:errors="*{userPassword}"></span>
                 </div>
 
                 <div class="field">

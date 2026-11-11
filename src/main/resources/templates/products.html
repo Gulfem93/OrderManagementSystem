@@ -98,8 +98,8 @@
         <main>
             <div th:if="${param.added}" class="notice notice_success">Product added successfully.</div>
             <div th:if="${param.updated}" class="notice notice_success">Product updated successfully.</div>
-            <div th:if="${param.cartAdded}" class="notice notice_success">Ürün sepete eklendi.</div>
-            <div th:if="${cartError}" class="notice notice_error" th:text="${cartError}">Hata</div>
+            <div th:if="${param.cartAdded}" class="notice notice_success">Product added to your cart.</div>
+            <div th:if="${cartError}" class="notice notice_error" th:text="${cartError}">Error</div>
 
             <!-- ============ OWNER: ÜRÜN EKLEME / DÜZENLEME FORMU ============ -->
             <!-- editId varsa form düzenleme modundadır (Edit butonuyla açılır) -->

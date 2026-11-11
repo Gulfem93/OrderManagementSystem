@@ -43,7 +43,7 @@ public class AdminController {
                 adminService.countUsers(),
                 orderService.countOrders(),
                 orderService.countOrdersByStatus(OrderStatus.PENDING),
-                productService.countLowStock(5)));
+                productService.countLowStock()));
         return "admin";
     }
 
