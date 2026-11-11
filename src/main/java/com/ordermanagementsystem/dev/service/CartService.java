@@ -9,13 +9,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ordermanagementsystem.dev.data.CartItemData;
 import com.ordermanagementsystem.dev.model.CartItemModel;
-import com.ordermanagementsystem.dev.model.CustomerModel;
 import com.ordermanagementsystem.dev.model.OrderItemModel;
 import com.ordermanagementsystem.dev.model.OrdersModel;
 import com.ordermanagementsystem.dev.model.ProductsModel;
 import com.ordermanagementsystem.dev.model.UsersModel;
 import com.ordermanagementsystem.dev.repository.CartRepository;
-import com.ordermanagementsystem.dev.repository.CustomerRepository;
 import com.ordermanagementsystem.dev.repository.OrderRepository;
 import com.ordermanagementsystem.dev.repository.ProductRepository;
 import com.ordermanagementsystem.dev.repository.UserRepository;
@@ -28,18 +26,15 @@ public class CartService {
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
     private final OrderRepository orderRepository;
-    private final CustomerRepository customerRepository;
 
     public CartService(CartRepository cartRepository,
             ProductRepository productRepository,
             UserRepository userRepository,
-            OrderRepository orderRepository,
-            CustomerRepository customerRepository) {
+            OrderRepository orderRepository) {
         this.cartRepository = cartRepository;
         this.productRepository = productRepository;
         this.userRepository = userRepository;
         this.orderRepository = orderRepository;
-        this.customerRepository = customerRepository;
     }
 
     @Transactional
@@ -119,7 +114,8 @@ public class CartService {
         }
 
         OrdersModel order = new OrdersModel();
-        order.setCustomer(findOrCreateCustomer(cartItems.get(0).getCustomer()));
+        // Sipariş doğrudan kullanıcıya bağlanır (ayrı customers kaydı yok)
+        order.setCustomer(cartItems.get(0).getCustomer());
         order.setOrderStatus(OrderStatus.PENDING);
         order.setOrderDate(LocalDateTime.now());
 
@@ -145,19 +141,6 @@ public class CartService {
         OrdersModel saved = orderRepository.save(order);
         cartRepository.deleteAll(cartItems);
         return saved;
-    }
-
-    // Siparişler customers tablosuna bağlı; kullanıcının kaydı yoksa users bilgileriyle oluşturulur
-    private CustomerModel findOrCreateCustomer(UsersModel user) {
-        return customerRepository.findByCustomerEmail(user.getUserEmail())
-                .orElseGet(() -> {
-                    CustomerModel customer = new CustomerModel();
-                    customer.setCustomerEmail(user.getUserEmail());
-                    customer.setCustomerName(user.getUserName());
-                    customer.setCustomerSurname(user.getUserSurname());
-                    customer.setCustomerPhone(user.getUserPhone());
-                    return customerRepository.save(customer);
-                });
     }
 
     // Customer: sepetindeki ürünler (My Orders sayfası için), en son eklenen üstte

@@ -100,7 +100,7 @@
                             <td>
                                 <form class="role_form" th:action="@{/admin/users/{id}/role(id=${u.userId})}" method="post">
                                     <select name="role" class="role_select" th:disabled="${isSelf}" aria-label="Role">
-                                        <option th:each="r : ${roles}" th:value="${r}" th:text="${r}"
+                                        <option th:each="r : ${roles}" th:value="${r}" th:text="${r.label}"
                                                 th:selected="${r == u.userRole}">ROLE</option>
                                     </select>
                                     <button type="submit" class="btn btn_ghost" th:disabled="${isSelf}">Save</button>

@@ -298,37 +298,38 @@ flowchart LR
 
 ```mermaid
 erDiagram
+    companies ||--o{ users : "owner'ları"
+    companies ||--o{ products : "ürünleri"
+    users ||--o{ orders : "verir"
     users ||--o{ cart_item : "sepete ekler"
-    users ||..o| customers : "e-posta ile eşleşir"
-    customers ||--o{ orders : "verir"
     orders ||--|{ orderitem : "içerir"
     products ||--o{ orderitem : "satılır"
     products ||--o{ cart_item : "sepette"
 
+    companies {
+        bigint company_id PK
+        string company_name "benzersiz"
+    }
     users {
         bigint user_id PK
         string user_email
-        string user_role "OWNER / CUSTOMER / ADMIN"
+        string user_role "CUSTOMER / OWNER / ADMIN"
         boolean user_active
-        string company_name "Owner'ın şirketi"
-    }
-    customers {
-        bigint customer_id PK
-        string customer_email
+        bigint company_id FK "sadece owner'larda"
     }
     products {
         bigint product_id PK
         string product_code
         decimal product_price
         bigint product_stock
-        string product_category
-        string company_name
+        string product_category "CategoryType"
+        bigint company_id FK
     }
     orders {
         bigint order_id PK
         datetime order_date
         string order_status
-        bigint customer_id FK
+        bigint user_id FK "siparişi veren kullanıcı"
     }
     orderitem {
         bigint order_item_id PK
@@ -345,7 +346,8 @@ erDiagram
     }
 ```
 
-> Owner'lar ürünlerle tablo ilişkisiyle değil, `company_name` alanı üzerinden eşleşir (bkz. [Bilinen Kısıtlar](#️-bilinen-kısıtlar)).
+> Eski veritabanları (ayrı `customers` tablosu, metin şirket adı, iki rol alanı) uygulama açılışında
+> `LegacySchemaMigration` ile otomatik olarak yeni modele taşınır.
 
 ### Sayfalar
 
@@ -363,7 +365,6 @@ erDiagram
 
 ## ⚠️ Bilinen Kısıtlar
 
-- **Şirketler ayrı bir tablo değildir.** Owner'lar şirket adıyla eşleştirilir ve kayıt sırasında şirket adının benzersizliği henüz kontrol edilmemektedir. Bu nedenle aynı adla ikinci bir şirket açılmamalıdır; `companies` tablosuna geçiş yol haritasındadır.
 - **Siparişin durumu tektir.** Bir siparişte birden fazla şirketin ürünü olabilir ve her owner yalnızca kendi kalemlerini görür, ancak bir owner durumu değiştirdiğinde siparişin tamamı etkilenir.
 - **Otomatik testler henüz yazılmamıştır.**
 - Arayüz metinleri İngilizcedir.
@@ -381,7 +382,7 @@ erDiagram
 - [x] Ürün düzenleme ve kategori seçimi
 
 **Sıradakiler**
-- [ ] Şirketleri ayrı bir tabloya taşıma ve şirket adını benzersiz yapma
+- [x] Şirketleri ayrı bir tabloya taşıma, `customers` tablosunu kaldırma, tek rol alanı
 - [ ] Servis katmanı için birim testleri (sepet, checkout, durum geçişleri)
 - [ ] Docker Compose ile tek komutla kurulum
 - [ ] GitHub Actions ile otomatik test

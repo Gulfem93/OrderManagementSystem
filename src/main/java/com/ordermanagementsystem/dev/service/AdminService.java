@@ -1,18 +1,17 @@
 package com.ordermanagementsystem.dev.service;
 
 import java.util.List;
-import java.util.Set;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ordermanagementsystem.dev.model.UsersModel;
 import com.ordermanagementsystem.dev.repository.UserRepository;
+import com.ordermanagementsystem.enums.UserRole;
 
 @Service
 public class AdminService {
-    public static final List<String> ROLES = List.of("ADMIN", "OWNER", "CUSTOMER");
-    private static final Set<String> ALLOWED_ROLES = Set.copyOf(ROLES);
+    public static final List<UserRole> ROLES = List.of(UserRole.values());
 
     private final UserRepository userRepository;
 
@@ -30,8 +29,8 @@ public class AdminService {
 
     @Transactional
     public void updateRole(Long userId, String newRole, String currentAdminEmail) {
-        String role = newRole == null ? "" : newRole.trim().toUpperCase();
-        if (!ALLOWED_ROLES.contains(role)) {
+        UserRole role = UserRole.fromValue(newRole);
+        if (role == null) {
             throw new IllegalArgumentException("Invalid role: " + newRole);
         }
 
@@ -39,10 +38,10 @@ public class AdminService {
         if (user.getUserEmail().equalsIgnoreCase(currentAdminEmail)) {
             throw new IllegalArgumentException("You cannot change your own role.");
         }
-        if ("OWNER".equals(role) && (user.getCompanyName() == null || user.getCompanyName().isBlank())) {
-            throw new IllegalArgumentException("This user has no company name, so they cannot be an OWNER.");
+        if (role == UserRole.OWNER && user.getCompany() == null) {
+            throw new IllegalArgumentException("This user has no company, so they cannot be an OWNER.");
         }
-        if (isActiveAdmin(user) && !"ADMIN".equals(role)) {
+        if (isActiveAdmin(user) && role != UserRole.ADMIN) {
             ensureNotLastAdmin();
         }
 
@@ -73,11 +72,11 @@ public class AdminService {
     }
 
     private boolean isActiveAdmin(UsersModel user) {
-        return "ADMIN".equals(user.getUserRole()) && Boolean.TRUE.equals(user.getUserActive());
+        return user.getUserRole() == UserRole.ADMIN && Boolean.TRUE.equals(user.getUserActive());
     }
 
     private void ensureNotLastAdmin() {
-        if (userRepository.countByUserRoleAndUserActiveTrue("ADMIN") <= 1) {
+        if (userRepository.countByUserRoleAndUserActiveTrue(UserRole.ADMIN) <= 1) {
             throw new IllegalArgumentException("At least one active admin must remain.");
         }
     }

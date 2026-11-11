@@ -58,8 +58,8 @@ public class ProductController {
             Model model) {
         if (!bindingResult.hasErrors()) {
             try {
-                String company = userService.getUserData(auth.getName()).getCompanyName();
-                productService.addProduct(productData, company);
+                // Ürün owner'ın şirketine bağlanır
+                productService.addProduct(productData, userService.getCompany(auth.getName()));
                 return "redirect:/products?added";
             } catch (IllegalArgumentException e) {
                 bindingResult.rejectValue("productCode", "duplicate", e.getMessage());
@@ -77,8 +77,8 @@ public class ProductController {
             Model model,
             RedirectAttributes redirectAttributes) {
         try {
-            String company = userService.getUserData(auth.getName()).getCompanyName();
-            model.addAttribute("productData", productService.getProductData(productId, company));
+            Long companyId = userService.getUserData(auth.getName()).getCompanyId();
+            model.addAttribute("productData", productService.getProductData(productId, companyId));
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("cartError", e.getMessage());
             return "redirect:/products";
@@ -98,8 +98,8 @@ public class ProductController {
             RedirectAttributes redirectAttributes) {
         if (!bindingResult.hasErrors()) {
             try {
-                String company = userService.getUserData(auth.getName()).getCompanyName();
-                productService.editProduct(productId, productData, company);
+                Long companyId = userService.getUserData(auth.getName()).getCompanyId();
+                productService.editProduct(productId, productData, companyId);
                 return "redirect:/products?updated";
             } catch (IllegalArgumentException e) {
                 if ("Product not found.".equals(e.getMessage())) {
@@ -127,13 +127,13 @@ public class ProductController {
 
         if (owner) {
             // Owner sadece kendi şirketinin ürünlerini yönetir
-            String company = userData.getCompanyName();
+            Long companyId = userData.getCompanyId();
             model.addAttribute("stats", new DashboardStats(
-                    orderService.countOrdersByCompany(company),
-                    orderService.countOrdersByCompanyAndStatus(company, OrderStatus.PENDING),
-                    productService.countLowStock(company, LOW_STOCK_THRESHOLD),
-                    orderService.countCustomersByCompany(company)));
-            model.addAttribute("products", productService.findByCompany(company));
+                    orderService.countOrdersByCompany(companyId),
+                    orderService.countOrdersByCompanyAndStatus(companyId, OrderStatus.PENDING),
+                    productService.countLowStock(companyId, LOW_STOCK_THRESHOLD),
+                    orderService.countCustomersByCompany(companyId)));
+            model.addAttribute("products", productService.findByCompany(companyId));
             model.addAttribute("categoryRoots", CategoryType.roots());
         } else {
             // Customer ürünleri şirket adına göre gruplanmış görür

@@ -19,13 +19,19 @@
                     <p class="subtitle">Sign up to start managing your orders</p>
                 </div>
 
+                <div class="alert alert_error" th:if="${#fields.hasGlobalErrors()}" th:errors="*{global}"></div>
+
                 <div class="field">
                     <label for="userRole">Role</label>
+                    <!-- Değerler UserRole enum adları (OWNER / CUSTOMER) -->
                     <select id="userRole" th:field="*{userRole}" required>
                         <option value="" disabled th:selected="${userData.userRole == null}">Select a role</option>
-                        <option th:value="OWNER">Owner</option>
-                        <option th:value="CUSTOMER">Customer</option>
+                        <option th:value="'OWNER'">Owner</option>
+                        <option th:value="'CUSTOMER'">Customer</option>
                     </select>
+                    <span class="alert alert_error"
+                        th:if="${#fields.hasErrors('userRole')}"
+                        th:errors="*{userRole}"></span>
                 </div>
 
                 <div class="field" id="companyField" hidden>

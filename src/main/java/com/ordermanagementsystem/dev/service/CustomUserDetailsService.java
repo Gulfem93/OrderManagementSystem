@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.ordermanagementsystem.dev.model.UsersModel;
 import com.ordermanagementsystem.dev.repository.UserRepository;
+import com.ordermanagementsystem.enums.UserRole;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
@@ -27,7 +28,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         return User.withUsername(user.getUserEmail())
                 .password(user.getUserPassword())
-                .roles(user.getUserRole())
+                .roles((user.getUserRole() == null ? UserRole.CUSTOMER : user.getUserRole()).name())
                 .disabled(!Boolean.TRUE.equals(user.getUserActive()))
                 .build();
     }

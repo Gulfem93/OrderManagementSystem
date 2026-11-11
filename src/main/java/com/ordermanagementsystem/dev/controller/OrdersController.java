@@ -43,7 +43,7 @@ public class OrdersController {
         model.addAttribute("isOwner", owner);
 
         if (owner) {
-            model.addAttribute("orders", orderService.getOrderViewsForCompany(userData.getCompanyName(), status));
+            model.addAttribute("orders", orderService.getOrderViewsForCompany(userData.getCompanyId(), status));
             model.addAttribute("statuses", OrderStatus.values());
             model.addAttribute("selectedStatus", status);
         } else {
@@ -94,8 +94,8 @@ public class OrdersController {
             Authentication auth,
             RedirectAttributes redirectAttributes) {
         try {
-            String company = userService.getUserData(auth.getName()).getCompanyName();
-            orderService.updateStatus(orderId, status, company);
+            Long companyId = userService.getUserData(auth.getName()).getCompanyId();
+            orderService.updateStatus(orderId, status, companyId);
             redirectAttributes.addFlashAttribute("statusUpdated",
                     "#" + orderId + " numaralı sipariş: " + status.getLabel());
         } catch (IllegalArgumentException | IllegalStateException e) {

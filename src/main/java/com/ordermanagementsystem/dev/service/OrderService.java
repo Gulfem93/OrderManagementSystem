@@ -1,19 +1,15 @@
 package com.ordermanagementsystem.dev.service;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ordermanagementsystem.dev.data.OrderView;
-import com.ordermanagementsystem.dev.data.OrdersData;
-import com.ordermanagementsystem.dev.model.CustomerModel;
 import com.ordermanagementsystem.dev.model.OrderItemModel;
 import com.ordermanagementsystem.dev.model.OrdersModel;
 import com.ordermanagementsystem.dev.model.ProductsModel;
-import com.ordermanagementsystem.dev.repository.CustomerRepository;
 import com.ordermanagementsystem.dev.repository.OrderRepository;
 import com.ordermanagementsystem.dev.repository.ProductRepository;
 import com.ordermanagementsystem.enums.OrderStatus;
@@ -22,36 +18,11 @@ import com.ordermanagementsystem.enums.OrderStatus;
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final CustomerRepository customerRepository;
     private final ProductRepository productRepository;
 
-    public OrderService(OrderRepository orderRepository, CustomerRepository customerRepository,
-            ProductRepository productRepository) {
+    public OrderService(OrderRepository orderRepository, ProductRepository productRepository) {
         this.orderRepository = orderRepository;
-        this.customerRepository = customerRepository;
         this.productRepository = productRepository;
-    }
-
-    @Transactional
-    public OrdersModel createOrder(OrdersData ordersData) {
-        // 1) Müşteri gerçekten var mı?
-        CustomerModel customer = customerRepository.findById(ordersData.getCustomerId())
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Customer not found: " + ordersData.getCustomerId()));
-
-        // 2) Siparişi oluştur – durum ve tarihi sunucu belirler
-        OrdersModel order = new OrdersModel();
-        order.setCustomer(customer);
-        order.setOrderStatus(OrderStatus.PENDING);
-        order.setOrderDate(LocalDateTime.now()); // alan LocalDate ise: LocalDate.now()
-
-        // 3) Kaydet ve döndür
-        return orderRepository.save(order);
-    }
-
-    // Müşterinin siparişleri (My Orders sayfası için)
-    public List<OrdersModel> getOrdersByCustomer(Long customerId) {
-        return orderRepository.findByCustomer_CustomerId(customerId);
     }
 
     // Owner: tüm siparişler (Orders sayfası için), en yeni üstte
@@ -61,12 +32,12 @@ public class OrderService {
 
     // Customer: kendi siparişleri (My Orders sayfası için), en yeni üstte
     public List<OrdersModel> getOrdersByCustomerEmail(String customerEmail) {
-        return orderRepository.findByCustomer_CustomerEmailOrderByOrderDateDesc(customerEmail);
+        return orderRepository.findByCustomer_UserEmailOrderByOrderDateDesc(customerEmail);
     }
 
     // Ana sayfadaki "Recent Orders" tablosu için
     public List<OrdersModel> getRecentOrdersByCustomerEmail(String customerEmail) {
-        return orderRepository.findTop5ByCustomer_CustomerEmailOrderByOrderDateDesc(customerEmail);
+        return orderRepository.findTop5ByCustomer_UserEmailOrderByOrderDateDesc(customerEmail);
     }
 
     // Customer: Order History (siparişin tüm kalemleri)
@@ -78,11 +49,11 @@ public class OrderService {
 
     // Owner: şirketinin ürünlerini içeren siparişler; sadece kendi kalemleri ve onların toplamı.
     // status null ise tüm durumlar gelir.
-    public List<OrderView> getOrderViewsForCompany(String company, OrderStatus status) {
-        return orderRepository.findByCompany(company).stream()
+    public List<OrderView> getOrderViewsForCompany(Long companyId, OrderStatus status) {
+        return orderRepository.findByCompany(companyId).stream()
                 .filter(order -> status == null || order.getOrderStatus() == status)
                 .map(order -> toView(order, order.getItems().stream()
-                        .filter(item -> company.equals(item.getProduct().getCompanyName()))
+                        .filter(item -> item.getProduct().belongsTo(companyId))
                         .toList()))
                 .toList();
     }
@@ -100,7 +71,7 @@ public class OrderService {
         OrdersModel order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Sipariş bulunamadı: " + orderId));
 
-        if (!order.getCustomer().getCustomerEmail().equalsIgnoreCase(customerEmail)) {
+        if (!order.getCustomer().getUserEmail().equalsIgnoreCase(customerEmail)) {
             throw new IllegalArgumentException("Sipariş bulunamadı: " + orderId);
         }
         if (order.getOrderStatus() == null || !order.getOrderStatus().isCancellable()) {
@@ -117,7 +88,7 @@ public class OrderService {
         OrdersModel order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Sipariş bulunamadı: " + orderId));
 
-        if (!order.getCustomer().getCustomerEmail().equalsIgnoreCase(customerEmail)) {
+        if (!order.getCustomer().getUserEmail().equalsIgnoreCase(customerEmail)) {
             throw new IllegalArgumentException("Sipariş bulunamadı: " + orderId);
         }
         if (order.getOrderStatus() == null || !order.getOrderStatus().isReceivable()) {
@@ -130,12 +101,12 @@ public class OrderService {
     // Owner: siparişin durumunu ilerletir (Onayla → Hazırlanıyor → Kargoda → Teslim edildi).
     // Sadece şirketinin ürününü içeren siparişleri değiştirebilir; iptal/iadede stok geri eklenir.
     @Transactional
-    public void updateStatus(Long orderId, OrderStatus newStatus, String company) {
+    public void updateStatus(Long orderId, OrderStatus newStatus, Long companyId) {
         OrdersModel order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Sipariş bulunamadı: " + orderId));
 
         boolean ownsItem = order.getItems().stream()
-                .anyMatch(item -> company.equals(item.getProduct().getCompanyName()));
+                .anyMatch(item -> item.getProduct().belongsTo(companyId));
         if (!ownsItem) {
             throw new IllegalArgumentException("Sipariş bulunamadı: " + orderId);
         }
@@ -162,16 +133,16 @@ public class OrderService {
     }
 
     // Owner dashboard: sadece şirketinin siparişleri
-    public long countOrdersByCompany(String company) {
-        return orderRepository.countByCompany(company);
+    public long countOrdersByCompany(Long companyId) {
+        return orderRepository.countByCompany(companyId);
     }
 
-    public long countOrdersByCompanyAndStatus(String company, OrderStatus orderStatus) {
-        return orderRepository.countByCompanyAndStatus(company, orderStatus);
+    public long countOrdersByCompanyAndStatus(Long companyId, OrderStatus orderStatus) {
+        return orderRepository.countByCompanyAndStatus(companyId, orderStatus);
     }
 
-    public long countCustomersByCompany(String company) {
-        return orderRepository.countCustomersByCompany(company);
+    public long countCustomersByCompany(Long companyId) {
+        return orderRepository.countCustomersByCompany(companyId);
     }
 
     public long countOrders() {

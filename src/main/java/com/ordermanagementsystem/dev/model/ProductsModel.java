@@ -10,6 +10,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -41,7 +43,17 @@ public class ProductsModel {
     private CategoryType productCategory;
 
     // Ürünü ekleyen owner'ın şirketi
-    @Column
-    private String companyName;
+    @ManyToOne
+    @JoinColumn(name = "company_id")
+    private CompanyModel company;
+
+    // Şablonlar için kısayol (veritabanında saklanmaz)
+    public String getCompanyName() {
+        return company == null ? null : company.getCompanyName();
+    }
+
+    public boolean belongsTo(Long companyId) {
+        return companyId != null && company != null && companyId.equals(company.getCompanyId());
+    }
 
 }
