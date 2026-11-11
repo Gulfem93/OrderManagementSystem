@@ -87,8 +87,8 @@
                             <span class="user_email" th:text="*{userEmail}">user@mail.com</span>
                             <span class="user_role" th:text="*{userRole}">ROLE</span>
                         </div>
+                        <a th:href="@{/profile}">Profile</a>
                         <a th:href="@{/orders}" th:text="${isOwner} ? 'All Orders' : 'My Orders'">My Orders</a>
-                        <a th:href="@{/profile}">Account Details</a>
                         <hr>
                         <form th:action="@{/logout}" method="post">
                             <button type="submit" class="logout_btn">Logout</button>

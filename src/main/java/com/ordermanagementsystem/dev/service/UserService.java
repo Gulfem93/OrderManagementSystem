@@ -5,6 +5,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ordermanagementsystem.dev.data.ProfileData;
 import com.ordermanagementsystem.dev.data.UsersData;
 import com.ordermanagementsystem.dev.model.CompanyModel;
 import com.ordermanagementsystem.dev.model.UsersModel;
@@ -78,6 +79,44 @@ public class UserService {
     // Owner'ın şirketi (ürün eklerken ürüne bağlanır)
     public CompanyModel getCompany(String userEmail) {
         return userRepository.findByUserEmail(userEmail).map(UsersModel::getCompany).orElse(null);
+    }
+
+    // Profile formu: mevcut değerlerle doldurulur
+    public ProfileData getProfileData(String userEmail) {
+        UsersModel user = findUser(userEmail);
+        ProfileData data = new ProfileData();
+        data.setUserName(user.getUserName());
+        data.setUserSurname(user.getUserSurname());
+        data.setUserPhone(user.getUserPhone());
+        return data;
+    }
+
+    // Profile: ad, soyad ve telefon güncellenir (e-posta, rol, şirket değişmez)
+    @Transactional
+    public void updateProfile(String userEmail, ProfileData data) {
+        UsersModel user = findUser(userEmail);
+        user.setUserName(data.getUserName().trim());
+        user.setUserSurname(data.getUserSurname().trim());
+        String phone = data.getUserPhone() == null ? null : data.getUserPhone().trim();
+        user.setUserPhone(phone == null || phone.isEmpty() ? null : phone);
+    }
+
+    // Profile: şifre değiştirme; mevcut şifre doğru değilse değişmez
+    @Transactional
+    public void changePassword(String userEmail, String currentPassword, String newPassword) {
+        UsersModel user = findUser(userEmail);
+        if (!passwordEncoder.matches(currentPassword, user.getUserPassword())) {
+            throw new IllegalArgumentException("Current password is incorrect.");
+        }
+        if (passwordEncoder.matches(newPassword, user.getUserPassword())) {
+            throw new IllegalArgumentException("New password must be different from the current one.");
+        }
+        user.setUserPassword(passwordEncoder.encode(newPassword));
+    }
+
+    private UsersModel findUser(String userEmail) {
+        return userRepository.findByUserEmail(userEmail)
+                .orElseThrow(() -> new IllegalArgumentException("User not found."));
     }
 
     public UsersData getUserData(String userEmail) {

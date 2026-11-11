@@ -42,6 +42,8 @@
                             <span class="user_email" th:text="*{userEmail}">admin@mail.com</span>
                             <span class="user_role" th:text="*{userRole}">ADMIN</span>
                         </div>
+                        <a th:href="@{/profile}">Profile</a>
+                        <hr>
                         <form th:action="@{/logout}" method="post">
                             <button type="submit" class="logout_btn">Logout</button>
                         </form>

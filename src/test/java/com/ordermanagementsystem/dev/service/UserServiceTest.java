@@ -7,6 +7,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Optional;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -15,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import com.ordermanagementsystem.dev.data.ProfileData;
 import com.ordermanagementsystem.dev.data.UsersData;
 import com.ordermanagementsystem.dev.model.CompanyModel;
 import com.ordermanagementsystem.dev.model.UsersModel;
@@ -105,5 +108,69 @@ class UserServiceTest {
         assertThatThrownBy(() -> userService.register(form(UserRole.CUSTOMER, null)))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("A user with this email address is already registered.");
+    }
+
+    // ===== Profile =====
+
+    private UsersModel existingUser() {
+        UsersModel user = new UsersModel();
+        user.setUserEmail("zehra@test.com");
+        user.setUserName("Zehra");
+        user.setUserSurname("Old");
+        user.setUserPhone("0500");
+        user.setUserPassword("OLD_HASH");
+        when(userRepository.findByUserEmail("zehra@test.com")).thenReturn(Optional.of(user));
+        return user;
+    }
+
+    @Test
+    void updateProfileTrimsValuesAndClearsBlankPhone() {
+        UsersModel user = existingUser();
+        ProfileData data = new ProfileData();
+        data.setUserName("  Zehra ");
+        data.setUserSurname(" Midder ");
+        data.setUserPhone("   ");
+
+        userService.updateProfile("zehra@test.com", data);
+
+        assertThat(user.getUserName()).isEqualTo("Zehra");
+        assertThat(user.getUserSurname()).isEqualTo("Midder");
+        assertThat(user.getUserPhone()).isNull();
+        assertThat(user.getUserEmail()).isEqualTo("zehra@test.com");
+    }
+
+    @Test
+    void changePasswordEncodesNewPasswordWhenCurrentIsCorrect() {
+        UsersModel user = existingUser();
+        when(passwordEncoder.matches("current123", "OLD_HASH")).thenReturn(true);
+        when(passwordEncoder.matches("newpass123", "OLD_HASH")).thenReturn(false);
+        when(passwordEncoder.encode("newpass123")).thenReturn("NEW_HASH");
+
+        userService.changePassword("zehra@test.com", "current123", "newpass123");
+
+        assertThat(user.getUserPassword()).isEqualTo("NEW_HASH");
+    }
+
+    @Test
+    void changePasswordRejectsWrongCurrentPassword() {
+        UsersModel user = existingUser();
+        when(passwordEncoder.matches("wrong", "OLD_HASH")).thenReturn(false);
+
+        assertThatThrownBy(() -> userService.changePassword("zehra@test.com", "wrong", "newpass123"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Current password is incorrect.");
+        assertThat(user.getUserPassword()).isEqualTo("OLD_HASH");
+        verify(passwordEncoder, never()).encode(any());
+    }
+
+    @Test
+    void changePasswordRejectsSamePassword() {
+        UsersModel user = existingUser();
+        when(passwordEncoder.matches("current123", "OLD_HASH")).thenReturn(true);
+
+        assertThatThrownBy(() -> userService.changePassword("zehra@test.com", "current123", "current123"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("New password must be different from the current one.");
+        assertThat(user.getUserPassword()).isEqualTo("OLD_HASH");
     }
 }

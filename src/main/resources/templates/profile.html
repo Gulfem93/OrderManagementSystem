@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/home.css}">
+    <link rel="stylesheet" th:href="@{/css/products.css}">
+</head>
+<body>
+<div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <a class="brand" th:href="@{/}">
+            <span class="brand_logo">OM</span>
+            <span class="brand_name">Order Management</span>
+        </a>
+
+        <!-- ADMIN MENÜSÜ -->
+        <nav class="menu" th:if="${isAdmin}">
+            <a class="menu_item" th:href="@{/admin}">
+                <svg viewBox="0 0 24 24"><path d="M3 3h7v9H3zM14 3h7v5h-7zM14 12h7v9h-7zM3 16h7v5H3z"/></svg>
+                <span>Admin Panel</span>
+            </a>
+            <a class="menu_item active" th:href="@{/profile}">
+                <svg viewBox="0 0 24 24"><path d="M16 11a4 4 0 1 0-8 0M4 21a8 8 0 0 1 16 0M12 3a4 4 0 1 1 0 8 4 4 0 0 1 0-8z"/></svg>
+                <span>Profile</span>
+            </a>
+        </nav>
+
+        <!-- OWNER MENÜSÜ -->
+        <nav class="menu" th:if="${isOwner}">
+            <a class="menu_item" th:href="@{/}">
+                <svg viewBox="0 0 24 24"><path d="M3 3h7v9H3zM14 3h7v5h-7zM14 12h7v9h-7zM3 16h7v5H3z"/></svg>
+                <span>Dashboard</span>
+            </a>
+            <a class="menu_item" th:href="@{/orders}">
+                <svg viewBox="0 0 24 24"><path d="M6 2h12l2 4v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6l2-4zm0 4h12M9 10h6M9 14h6"/></svg>
+                <span>Orders</span>
+            </a>
+            <a class="menu_item" th:href="@{/products}">
+                <svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5 9 5 9-5zM3 8v8l9 5 9-5V8M12 13v8"/></svg>
+                <span>Products &amp; Stock</span>
+            </a>
+            <a class="menu_item" th:href="@{/customers}">
+                <svg viewBox="0 0 24 24"><path d="M16 11a4 4 0 1 0-8 0M4 21a8 8 0 0 1 16 0M12 3a4 4 0 1 1 0 8 4 4 0 0 1 0-8z"/></svg>
+                <span>Customers</span>
+            </a>
+            <a class="menu_item" th:href="@{/reports}">
+                <svg viewBox="0 0 24 24"><path d="M3 3v18h18M7 15l4-4 3 3 6-6"/></svg>
+                <span>Reports</span>
+            </a>
+        </nav>
+
+        <!-- CUSTOMER MENÜSÜ -->
+        <nav class="menu" th:unless="${isOwner or isAdmin}">
+            <a class="menu_item" th:href="@{/}">
+                <svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg>
+                <span>Home</span>
+            </a>
+            <a class="menu_item" th:href="@{/products}">
+                <svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5 9 5 9-5zM3 8v8l9 5 9-5V8M12 13v8"/></svg>
+                <span>Shop</span>
+            </a>
+            <a class="menu_item" th:href="@{/orders}">
+                <svg viewBox="0 0 24 24"><path d="M6 2h12l2 4v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6l2-4zm0 4h12M9 10h6M9 14h6"/></svg>
+                <span>My Orders</span>
+            </a>
+            <a class="menu_item" th:href="@{/reports}">
+                <svg viewBox="0 0 24 24"><path d="M3 3v18h18M7 15l4-4 3 3 6-6"/></svg>
+                <span>Reports</span>
+            </a>
+            <a class="menu_item active" th:href="@{/profile}">
+                <svg viewBox="0 0 24 24"><path d="M16 11a4 4 0 1 0-8 0M4 21a8 8 0 0 1 16 0M12 3a4 4 0 1 1 0 8 4 4 0 0 1 0-8z"/></svg>
+                <span>Account</span>
+            </a>
+        </nav>
+    </aside>
+
+    <div class="content">
+        <header class="topbar">
+            <h1 class="page_title">Profile</h1>
+
+            <div class="dropdown">
+                <button type="button" class="dropdown_btn" aria-haspopup="true">
+                    <span class="avatar"
+                          th:text="${#strings.isEmpty(userData.userName)} ? '?' : ${#strings.toUpperCase(#strings.substring(userData.userName, 0, 1))}">?</span>
+                    <span class="dropdown_label" th:text="${userData.userName}">User</span>
+                    <svg class="chevron" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+                </button>
+                <div class="dropdown_content">
+                    <div class="dropdown_header">
+                        <span class="user_name" th:text="${userData.userName} + ' ' + (${userData.userSurname} ?: '')">User</span>
+                        <span class="user_email" th:text="${userData.userEmail}">user@mail.com</span>
+                        <span class="user_role" th:text="${userData.userRole}">ROLE</span>
+                    </div>
+                    <a th:href="@{/profile}">Profile</a>
+                    <a th:unless="${isAdmin}" th:href="@{/orders}" th:text="${isOwner} ? 'All Orders' : 'My Orders'">My Orders</a>
+                    <hr>
+                    <form th:action="@{/logout}" method="post">
+                        <button type="submit" class="logout_btn">Logout</button>
+                    </form>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <div th:if="${param.updated}" class="notice notice_success">Profile updated successfully.</div>
+            <div th:if="${param.passwordChanged}" class="notice notice_success">Password changed successfully.</div>
+
+            <!-- ============ PROFİL KARTI ============ -->
+            <section class="panel profile_card">
+                <span class="profile_avatar"
+                      th:text="${#strings.isEmpty(userData.userName)} ? '?' : ${#strings.toUpperCase(#strings.substring(userData.userName, 0, 1))}">Z</span>
+                <div class="profile_info">
+                    <h2 class="profile_name" th:text="${userData.userName} + ' ' + (${userData.userSurname} ?: '')">Zehra Midder</h2>
+                    <p class="profile_email" th:text="${userData.userEmail}">zehra@example.com</p>
+                    <div class="profile_tags">
+                        <span class="profile_tag" th:text="${userData.userRole?.label} ?: '-'">Owner</span>
+                        <span class="profile_tag profile_tag_company" th:if="${userData.companyName != null}"
+                              th:text="${userData.companyName}">Company</span>
+                        <span class="profile_tag"
+                              th:classappend="${userData.userActive == null or userData.userActive} ? 'profile_tag_ok' : 'profile_tag_off'"
+                              th:text="${userData.userActive == null or userData.userActive} ? 'Active' : 'Inactive'">Active</span>
+                    </div>
+                </div>
+            </section>
+
+            <div class="profile_grid">
+                <!-- ============ KİŞİSEL BİLGİLER ============ -->
+                <section class="panel">
+                    <h2 class="panel_title">Personal Information</h2>
+
+                    <form th:action="@{/profile}" th:object="${profileData}" method="post" class="profile_form" novalidate>
+                        <div class="field">
+                            <label for="userName">Name</label>
+                            <input type="text" id="userName" th:field="*{userName}" maxlength="50" required />
+                            <span class="field_error" th:if="${#fields.hasErrors('userName')}" th:errors="*{userName}"></span>
+                        </div>
+
+                        <div class="field">
+                            <label for="userSurname">Surname</label>
+                            <input type="text" id="userSurname" th:field="*{userSurname}" maxlength="50" required />
+                            <span class="field_error" th:if="${#fields.hasErrors('userSurname')}" th:errors="*{userSurname}"></span>
+                        </div>
+
+                        <div class="field">
+                            <label for="userPhone">Phone <span class="field_hint">(optional)</span></label>
+                            <input type="tel" id="userPhone" th:field="*{userPhone}" maxlength="20" placeholder="05XX XXX XX XX" />
+                            <span class="field_error" th:if="${#fields.hasErrors('userPhone')}" th:errors="*{userPhone}"></span>
+                        </div>
+
+                        <!-- Değiştirilemeyen bilgiler -->
+                        <div class="field">
+                            <label for="profileEmail">Email</label>
+                            <input type="email" id="profileEmail" th:value="${userData.userEmail}" disabled />
+                            <span class="field_hint">Email is used to sign in and cannot be changed.</span>
+                        </div>
+
+                        <div class="field" th:if="${isOwner}">
+                            <label for="profileCompany">Company</label>
+                            <input type="text" id="profileCompany" th:value="${userData.companyName} ?: '-'" disabled />
+                        </div>
+
+                        <div class="profile_actions">
+                            <button type="submit" class="btn_primary">Save Changes</button>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- ============ ŞİFRE DEĞİŞTİRME ============ -->
+                <section class="panel">
+                    <h2 class="panel_title">Change Password</h2>
+
+                    <form th:action="@{/profile/password}" th:object="${passwordData}" method="post" class="profile_form" novalidate>
+                        <div class="field">
+                            <label for="currentPassword">Current Password</label>
+                            <input type="password" id="currentPassword" th:field="*{currentPassword}"
+                                   autocomplete="current-password" required />
+                            <span class="field_error" th:if="${#fields.hasErrors('currentPassword')}" th:errors="*{currentPassword}"></span>
+                        </div>
+
+                        <div class="field">
+                            <label for="newPassword">New Password</label>
+                            <input type="password" id="newPassword" th:field="*{newPassword}"
+                                   minlength="8" maxlength="72" autocomplete="new-password" required />
+                            <span class="field_error" th:if="${#fields.hasErrors('newPassword')}" th:errors="*{newPassword}"></span>
+                            <span class="field_hint" th:unless="${#fields.hasErrors('newPassword')}">8-72 characters.</span>
+                        </div>
+
+                        <div class="field">
+                            <label for="confirmPassword">Repeat New Password</label>
+                            <input type="password" id="confirmPassword" th:field="*{confirmPassword}"
+                                   minlength="8" maxlength="72" autocomplete="new-password" required />
+                            <span class="field_error" th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}"></span>
+                        </div>
+
+                        <div class="profile_actions">
+                            <button type="submit" class="btn_primary">Change Password</button>
+                        </div>
+                    </form>
+                </section>
+            </div>
+        </main>
+
+        <footer class="home_footer"></footer>
+    </div>
+</div>
+</body>
+</html>
