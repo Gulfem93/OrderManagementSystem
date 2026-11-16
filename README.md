@@ -137,6 +137,7 @@ stateDiagram-v2
 | Sipariş takip çubuğu | — | ✅ | — |
 | Müşteriler sayfası | ✅ | — | — |
 | Raporlar | Satış, sipariş, stok | Harcama | — |
+| Profil (ad, soyad, telefon, şifre değiştirme) | ✅ | ✅ | ✅ |
 | Kullanıcı rolü ve aktiflik yönetimi | — | — | ✅ |
 
 ### 📊 Raporlar (`/reports`)
@@ -183,6 +184,7 @@ stateDiagram-v2
 - Kayıt formu sunucu tarafında doğrulanır (zorunlu alanlar, geçerli e-posta, en az 8 karakterlik şifre); e-posta veritabanında da benzersizdir
 - Sepet ve satın alma yalnızca Customer'a açıktır
 - Pasif yapılan hesaplar giriş yapamaz
+- Profilde şifre değiştirmek için mevcut şifre istenir; e-posta, rol ve şirket kullanıcı tarafından değiştirilemez
 - Veritabanı bağlantı bilgileri repoda değil, `.gitignore`'daki yerel ayar dosyasında tutulur
 
 ---
@@ -275,9 +277,10 @@ Testler MySQL gerektirmez; `test` profiliyle bellekte çalışan H2 veritabanın
 |---|---|
 | `CartServiceTest` | Checkout stoğu düşer, şirket başına sipariş oluşturur, ürünleri id sırasıyla kilitler, stok yetmezse hiçbir şey kaydetmez |
 | `OrderServiceTest` | Durum geçişleri, iptalde stok iadesi, başka şirketin / müşterinin siparişine erişim engeli |
-| `UserServiceTest` | Kayıt: şifre hash'leme, owner için şirket oluşturma, admin rolünün seçilememesi, tekrar eden e-posta |
+| `UserServiceTest` | Kayıt: şifre hash'leme, owner için şirket oluşturma, admin rolünün seçilememesi, tekrar eden e-posta; profil güncelleme ve şifre değiştirme |
 | `OrderStatusTest` | Sipariş durum makinesi kuralları |
 | `SecurityAccessTest` | Rol bazlı erişim (sepet, ürün ekleme, admin paneli), CSRF, kayıt formu doğrulaması |
+| `ProfilePageTest` | Profil sayfasının owner ve customer için açılması, giriş yapmayanın login'e yönlendirilmesi, form kaydı, şifre doğrulaması |
 
 ---
 
@@ -287,18 +290,18 @@ Proje katmanlı mimariyle düzenlenmiştir: istek **controller**'a gelir, iş ma
 
 ```
 src/main/java/com/ordermanagementsystem
-├── dev
-│   ├── config/       → Güvenlik, şifreleme, admin hesabı oluşturma
-│   ├── controller/   → Sayfa istekleri (Home, Login, Signup, Product, Cart,
-│   │                   Orders, Customers, Reports, Admin)
-│   ├── service/      → İş mantığı (sepet, sipariş, stok, raporlar)
-│   ├── repository/   → Veritabanı erişimi
-│   ├── model/        → Veritabanı tabloları (Entity)
-│   └── data/         → Formlardan gelen ve sayfalara giden veriler (DTO)
-└── enums
-    ├── OrderStatus   → Sipariş durumları ve izin verilen geçişler
-    ├── CategoryType  → Hiyerarşik ürün kategorileri
-    └── UserRole      → Kullanıcı rolleri
+└── dev
+    ├── config/       → Güvenlik, şifreleme, admin hesabı oluşturma, eski veri taşıma
+    ├── controller/   → Sayfa istekleri (Home, Login, Signup, Product, Cart,
+    │                   Orders, Customers, Reports, Profile, Admin)
+    ├── service/      → İş mantığı (sepet, sipariş, stok, raporlar, profil)
+    ├── repository/   → Veritabanı erişimi
+    ├── model/        → Veritabanı tabloları (Entity)
+    ├── data/         → Formlardan gelen ve sayfalara giden veriler (DTO)
+    └── enums/
+        ├── OrderStatus   → Sipariş durumları ve izin verilen geçişler
+        ├── CategoryType  → Hiyerarşik ürün kategorileri
+        └── UserRole      → Kullanıcı rolleri
 
 src/main/resources
 ├── templates/        → HTML sayfaları (Thymeleaf)
@@ -383,6 +386,7 @@ erDiagram
 | `/orders` | Owner / Customer | Şirketin siparişleri / sepet ve sipariş geçmişi |
 | `/customers` | Owner | Şirketten alışveriş yapan müşteriler |
 | `/reports` | Owner / Customer | Satış, sipariş ve stok raporu / harcama raporu |
+| `/profile` | Giriş yapan herkes | Profil bilgileri ve şifre değiştirme |
 | `/admin` | Admin | Kullanıcı yönetimi |
 
 ---
@@ -404,15 +408,15 @@ erDiagram
 - [x] Müşteriler sayfası
 - [x] Raporlar sayfası
 - [x] Ürün düzenleme ve kategori seçimi
-
-**Sıradakiler**
 - [x] Şirketleri ayrı bir tabloya taşıma, `customers` tablosunu kaldırma, tek rol alanı
 - [x] Servis katmanı için birim testleri (sepet, checkout, durum geçişleri) ve güvenlik testleri
 - [x] Sepeti şirket başına ayrı siparişlere bölme
+- [x] Profil sayfası (bilgileri düzenleme, şifre değiştirme)
+
+**Sıradakiler**
 - [ ] Docker Compose ile tek komutla kurulum
 - [ ] GitHub Actions ile otomatik test
 - [ ] Ürün silme / pasife alma
-- [ ] Profil ve hesap bilgileri sayfası
 - [ ] Ürün arama, kategoriye göre filtreleme ve sayfalama
 - [ ] Siparişte teslimat adresi
 
