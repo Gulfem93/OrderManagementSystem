@@ -8,8 +8,8 @@ import com.ordermanagementsystem.dev.model.OrderItemModel;
 import com.ordermanagementsystem.dev.model.OrdersModel;
 import com.ordermanagementsystem.dev.model.ProductsModel;
 import com.ordermanagementsystem.dev.model.UsersModel;
-import com.ordermanagementsystem.enums.OrderStatus;
-import com.ordermanagementsystem.enums.UserRole;
+import com.ordermanagementsystem.dev.enums.OrderStatus;
+import com.ordermanagementsystem.dev.enums.UserRole;
 
 // Servis testleri için küçük nesne üreticileri
 final class TestData {

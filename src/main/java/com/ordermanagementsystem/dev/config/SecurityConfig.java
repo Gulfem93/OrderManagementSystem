@@ -19,7 +19,6 @@ public class SecurityConfig {
                                                 .requestMatchers("/customers/**").hasRole("OWNER")
                                                 // Ürün listesini herkes görür, ürün ekleme/değiştirme sadece OWNER
                                                 .requestMatchers(HttpMethod.POST, "/products/**").hasRole("OWNER")
-                                                .requestMatchers("/profile").permitAll()
                                                 .requestMatchers("/products/*/edit").hasRole("OWNER")
                                                 // Sepet ve satın alma sadece CUSTOMER (owner/admin alışveriş yapmaz)
                                                 .requestMatchers("/cart/**").hasRole("CUSTOMER")

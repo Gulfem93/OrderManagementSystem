@@ -1,6 +1,6 @@
 package com.ordermanagementsystem.dev.data;
 
-import com.ordermanagementsystem.enums.UserRole;
+import com.ordermanagementsystem.dev.enums.UserRole;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

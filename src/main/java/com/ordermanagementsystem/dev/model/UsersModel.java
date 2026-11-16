@@ -1,6 +1,6 @@
 package com.ordermanagementsystem.dev.model;
 
-import com.ordermanagementsystem.enums.UserRole;
+import com.ordermanagementsystem.dev.enums.UserRole;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;

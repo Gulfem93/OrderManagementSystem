@@ -1,4 +1,4 @@
-package com.ordermanagementsystem.enums;
+package com.ordermanagementsystem.dev.enums;
 
 import java.util.Arrays;
 import java.util.List;

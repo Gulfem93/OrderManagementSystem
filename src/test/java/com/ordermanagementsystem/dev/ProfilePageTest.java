@@ -24,7 +24,7 @@ import com.ordermanagementsystem.dev.model.CompanyModel;
 import com.ordermanagementsystem.dev.model.UsersModel;
 import com.ordermanagementsystem.dev.repository.CompanyRepository;
 import com.ordermanagementsystem.dev.repository.UserRepository;
-import com.ordermanagementsystem.enums.UserRole;
+import com.ordermanagementsystem.dev.enums.UserRole;
 
 // /profile sayfası gerçekten render ediliyor mu, form kaydı ve şifre doğrulaması çalışıyor mu
 @SpringBootTest

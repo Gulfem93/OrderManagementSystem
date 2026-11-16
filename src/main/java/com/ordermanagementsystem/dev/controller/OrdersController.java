@@ -16,7 +16,7 @@ import com.ordermanagementsystem.dev.model.CartItemModel;
 import com.ordermanagementsystem.dev.service.CartService;
 import com.ordermanagementsystem.dev.service.OrderService;
 import com.ordermanagementsystem.dev.service.UserService;
-import com.ordermanagementsystem.enums.OrderStatus;
+import com.ordermanagementsystem.dev.enums.OrderStatus;
 
 @Controller
 public class OrdersController {

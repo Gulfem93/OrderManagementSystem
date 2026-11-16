@@ -17,8 +17,8 @@ import com.ordermanagementsystem.dev.data.UsersData;
 import com.ordermanagementsystem.dev.service.OrderService;
 import com.ordermanagementsystem.dev.service.ProductService;
 import com.ordermanagementsystem.dev.service.UserService;
-import com.ordermanagementsystem.enums.CategoryType;
-import com.ordermanagementsystem.enums.OrderStatus;
+import com.ordermanagementsystem.dev.enums.CategoryType;
+import com.ordermanagementsystem.dev.enums.OrderStatus;
 
 import jakarta.validation.Valid;
 

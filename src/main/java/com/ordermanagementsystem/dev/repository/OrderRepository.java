@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.ordermanagementsystem.dev.model.OrdersModel;
-import com.ordermanagementsystem.enums.OrderStatus;
+import com.ordermanagementsystem.dev.enums.OrderStatus;
 import java.time.LocalDateTime;
 
 public interface OrderRepository extends JpaRepository<OrdersModel, Long> {

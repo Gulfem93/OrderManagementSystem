@@ -1,4 +1,4 @@
-package com.ordermanagementsystem.enums;
+package com.ordermanagementsystem.dev.enums;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

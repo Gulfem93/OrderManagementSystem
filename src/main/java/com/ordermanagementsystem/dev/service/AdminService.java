@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ordermanagementsystem.dev.model.UsersModel;
 import com.ordermanagementsystem.dev.repository.UserRepository;
-import com.ordermanagementsystem.enums.UserRole;
+import com.ordermanagementsystem.dev.enums.UserRole;
 
 @Service
 public class AdminService {

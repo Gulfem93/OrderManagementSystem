@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 import com.ordermanagementsystem.dev.data.UsersData;
 import com.ordermanagementsystem.dev.service.UserService;
-import com.ordermanagementsystem.enums.UserRole;
+import com.ordermanagementsystem.dev.enums.UserRole;
 
 import jakarta.validation.Valid;
 

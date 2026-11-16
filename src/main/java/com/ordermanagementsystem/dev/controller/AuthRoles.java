@@ -2,7 +2,7 @@ package com.ordermanagementsystem.dev.controller;
 
 import org.springframework.security.core.Authentication;
 
-import com.ordermanagementsystem.enums.UserRole;
+import com.ordermanagementsystem.dev.enums.UserRole;
 
 // Controller'ların ortak rol kontrolü (Spring Security yetkisi: ROLE_<ad>)
 final class AuthRoles {

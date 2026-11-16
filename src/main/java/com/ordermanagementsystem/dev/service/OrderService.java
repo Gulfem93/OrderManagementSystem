@@ -13,7 +13,7 @@ import com.ordermanagementsystem.dev.model.OrdersModel;
 import com.ordermanagementsystem.dev.model.ProductsModel;
 import com.ordermanagementsystem.dev.repository.OrderRepository;
 import com.ordermanagementsystem.dev.repository.ProductRepository;
-import com.ordermanagementsystem.enums.OrderStatus;
+import com.ordermanagementsystem.dev.enums.OrderStatus;
 
 @Service
 public class OrderService {

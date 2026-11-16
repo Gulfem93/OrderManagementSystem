@@ -26,7 +26,7 @@ import com.ordermanagementsystem.dev.model.ProductsModel;
 import com.ordermanagementsystem.dev.model.UsersModel;
 import com.ordermanagementsystem.dev.repository.OrderRepository;
 import com.ordermanagementsystem.dev.repository.ProductRepository;
-import com.ordermanagementsystem.enums.OrderStatus;
+import com.ordermanagementsystem.dev.enums.OrderStatus;
 
 @ExtendWith(MockitoExtension.class)
 class OrderServiceTest {

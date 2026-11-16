@@ -2,7 +2,7 @@ package com.ordermanagementsystem.dev.data;
 
 import java.math.BigDecimal;
 
-import com.ordermanagementsystem.enums.CategoryType;
+import com.ordermanagementsystem.dev.enums.CategoryType;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

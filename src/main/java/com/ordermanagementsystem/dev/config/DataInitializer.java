@@ -12,7 +12,7 @@ import org.springframework.util.StringUtils;
 
 import com.ordermanagementsystem.dev.model.UsersModel;
 import com.ordermanagementsystem.dev.repository.UserRepository;
-import com.ordermanagementsystem.enums.UserRole;
+import com.ordermanagementsystem.dev.enums.UserRole;
 
 /**
  * app.seed.enabled=true ise uygulama açılışında admin hesabını oluşturur (zaten varsa dokunmaz).

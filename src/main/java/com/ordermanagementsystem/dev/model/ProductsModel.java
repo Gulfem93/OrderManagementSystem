@@ -2,7 +2,7 @@ package com.ordermanagementsystem.dev.model;
 
 import java.math.BigDecimal;
 
-import com.ordermanagementsystem.enums.CategoryType;
+import com.ordermanagementsystem.dev.enums.CategoryType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;

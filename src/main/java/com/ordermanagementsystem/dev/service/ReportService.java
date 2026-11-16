@@ -31,7 +31,7 @@ import com.ordermanagementsystem.dev.data.ReportData.Bar;
 import com.ordermanagementsystem.dev.data.ReportData.ProductRow;
 import com.ordermanagementsystem.dev.model.OrderItemModel;
 import com.ordermanagementsystem.dev.model.OrdersModel;
-import com.ordermanagementsystem.enums.OrderStatus;
+import com.ordermanagementsystem.dev.enums.OrderStatus;
 
 import lombok.RequiredArgsConstructor;
 

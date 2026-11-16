@@ -20,7 +20,7 @@ import com.ordermanagementsystem.dev.repository.CartRepository;
 import com.ordermanagementsystem.dev.repository.OrderRepository;
 import com.ordermanagementsystem.dev.repository.ProductRepository;
 import com.ordermanagementsystem.dev.repository.UserRepository;
-import com.ordermanagementsystem.enums.OrderStatus;
+import com.ordermanagementsystem.dev.enums.OrderStatus;
 
 @Service
 public class CartService {

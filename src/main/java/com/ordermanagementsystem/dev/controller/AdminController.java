@@ -14,7 +14,7 @@ import com.ordermanagementsystem.dev.service.AdminService;
 import com.ordermanagementsystem.dev.service.OrderService;
 import com.ordermanagementsystem.dev.service.ProductService;
 import com.ordermanagementsystem.dev.service.UserService;
-import com.ordermanagementsystem.enums.OrderStatus;
+import com.ordermanagementsystem.dev.enums.OrderStatus;
 
 // /admin/** sadece ROLE_ADMIN (SecurityConfig)
 @Controller
